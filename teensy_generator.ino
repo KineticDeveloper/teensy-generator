@@ -70,9 +70,9 @@ volatile uint32_t acc=0, m=0;
 
 IntervalTimer timer0;
 
-float cor=1.0006; // cor = measured frequency (with frequency counter) divided by desired frequency
+float cor=1; // cor = measured frequency (with frequency counter) divided by desired frequency
 
-void set_freq(float f)  // f in hundredth of hz
+void set_freq(float f)
 {
   m = f * pow(2, 32) / (50000 * cor);
 }
