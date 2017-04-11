@@ -72,9 +72,18 @@ IntervalTimer timer0;
 
 float cor=1; // cor = measured frequency (with frequency counter) divided by desired frequency
 
+int pausePin = 2;
+int ledPin = 13;
+
 void set_freq(float f)
 {
   m = f * pow(2, 32) / (50000 * cor);
+}
+
+void stop()
+{
+  acc=0;
+  m=0;
 }
 
 void setup() {
@@ -82,11 +91,9 @@ void setup() {
   DAC0_C0 = DAC_C0_DACEN | DAC_C0_DACRFS;
 
   timer0.begin(clk, 20); // 20 usec -> f = 50 kHz
+  pinMode(pausePin, INPUT);
+  pinMode(ledPin, OUTPUT);
   set_freq(100);
-}
-
-void loop() {
-
 }
 
 void clk()
@@ -94,4 +101,44 @@ void clk()
   *(int16_t *)&(DAC0_DAT0L) = sineTable[acc>>23];
   acc+=m;
 }
+
+void checkPauseButton()
+{
+  while(digitalRead(pausePin)==0)
+    delay(100);
+}
+
+void ledOn()
+{
+  digitalWrite(ledPin, HIGH);
+}
+
+void ledOff()
+{
+  digitalWrite(ledPin, LOW);
+}
+
+void loop() {
+  /*
+  for(float f=0.5;f<=121;f+=0.01) {
+    checkPauseButton();
+    for(int i=0;i<5;i++) {
+      set_freq(f);
+      ledOn();
+      delay(400);
+      stop();
+      ledOff();
+      delay(600); 
+    }
+  }
+  */
+  while(1) {
+    ledOn();
+    delay(100);
+    ledOff();
+    delay(100);
+  }
+}
+
+
 
