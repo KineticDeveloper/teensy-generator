@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 uint16_t sineTable1[512] = {
   0x800,0x819,0x832,0x84b,0x864,0x87d,0x896,0x8af,
   0x8c8,0x8e1,0x8fa,0x913,0x92c,0x945,0x95e,0x976,
@@ -112,7 +114,8 @@ enum Function {single_frequency, sweep, sweep_n_sinusoids, multiple_frequencies_
 // ### Configuration ###
 Function current_function = sweep;
 float n_sinusoids = 10;
-
+float f1 = 0.5;
+float f2 = 121;
 // ### End of configuration ###
 
 IntervalTimer timer0;
@@ -121,6 +124,7 @@ float cor=1; // cor = measured frequency (with frequency counter) divided by des
 
 const int pausePin = 0;
 const int ledPin = 13;
+const int resetPin = 1;
 
 uint32_t freq(float f)
 {
@@ -140,6 +144,20 @@ void setup() {
   timer0.begin(clk, 20); // 20 usec -> f = 50 kHz
   pinMode(pausePin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
+  pinMode(resetPin, INPUT_PULLUP);
+
+  if(digitalRead(resetPin)==LOW) {
+    saveFrequency(f1);
+    ledOn();
+    delay(1000);
+    ledOff();
+    delay(1000);
+    ledOn();
+    delay(1000);
+    ledOff();
+    while(1);
+  }
+    
 
   /*
   m2[0]=freq(121);
@@ -171,9 +189,11 @@ void clk()
   }
 }
 
-void checkPauseButton()
+void checkPauseButton(float currentFrenquency)
 {
-  while(digitalRead(pausePin))
+  if(digitalRead(pausePin) == HIGH) // HIGH means that the jumper is removed so we want to pause
+    saveFrequency(currentFrenquency);
+  while(digitalRead(pausePin) == HIGH)
     delay(100);
 }
 
@@ -187,6 +207,23 @@ void ledOff()
   digitalWrite(ledPin, LOW);
 }
 
+void saveFrequency(float freq)
+{
+  uint8_t *ptr;
+  ptr = (uint8_t *)&freq;
+  for(unsigned int i=0;i<sizeof(float);i++)
+    EEPROM.write(i, ptr[i]);
+}
+
+float loadFrequency()
+{
+  float ret=0;
+  uint8_t *ptr = (uint8_t *)&ret;
+  for(unsigned int i=0;i<sizeof(float);i++)
+    ptr[i] = EEPROM.read(i);
+  return ret;
+}
+
 void loop() {
   
   switch(current_function) {
@@ -198,8 +235,8 @@ void loop() {
       break;
       
     case sweep:
-      for(float f=0.5;f<=121;f+=0.01) {
-        checkPauseButton();
+      for(float f=loadFrequency();f<=f2;f+=0.01) {
+        checkPauseButton(f);
         for(int i=0;i<5;i++) {
           m1=freq(f);
           ledOn();
@@ -214,8 +251,8 @@ void loop() {
       break;
       
     case sweep_n_sinusoids:
-      for(float f=0.5;f<=121;f+=0.01) {
-        checkPauseButton();
+      for(float f=loadFrequency();f<=f2;f+=0.01) {
+        checkPauseButton(f);
         for(int i=0;i<5;i++) {
           m1=freq(f);
           ledOn();
