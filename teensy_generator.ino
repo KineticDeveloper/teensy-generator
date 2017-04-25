@@ -106,7 +106,7 @@ volatile uint32_t acc2[16]={0}, m2[16]={0};
 enum Mode {single, multiple};
 volatile Mode mode=single;
 
-enum Function {single_frequency, sweep, inverted_sweep, sweep_n_sinusoids, multiple_frequencies_demo};
+enum Function {single_frequency, sweep, sweep_n_sinusoids, multiple_frequencies_demo};
 
 
 // ### Configuration ###
@@ -211,22 +211,8 @@ void loop() {
       }
       ledOn();
       while(1);
-    case inverted_sweep:
-      for(float f=121;f>=0.5;f-=0.01) {
-        checkPauseButton();
-        for(int i=0;i<5;i++) {
-          m1=freq(f);
-          ledOn();
-          delay(400);
-          stop();
-          ledOff();
-          delay(600); 
-        }
-      }
-      ledOn();
-      while(1);
       break;
-
+      
     case sweep_n_sinusoids:
       for(float f=0.5;f<=121;f+=0.01) {
         checkPauseButton();
