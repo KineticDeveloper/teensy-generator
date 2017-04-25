@@ -138,6 +138,7 @@ void stop()
 }
 
 void setup() {
+  Serial.begin(9600);
   SIM_SCGC6 |= SIM_SCGC6_DAC0;
   DAC0_C0 = DAC_C0_DACEN | DAC_C0_DACRFS;
 
@@ -147,6 +148,8 @@ void setup() {
   pinMode(resetPin, INPUT_PULLUP);
 
   if(digitalRead(resetPin)==LOW) {
+    Serial.print("Resetting initial frequency to ");
+    Serial.println(f1);
     saveFrequency(f1);
     ledOn();
     delay(1000);
@@ -157,7 +160,6 @@ void setup() {
     ledOff();
     while(1);
   }
-    
 
   /*
   m2[0]=freq(121);
@@ -236,6 +238,8 @@ void loop() {
       
     case sweep:
       for(float f=loadFrequency();f<=f2;f+=0.01) {
+        Serial.print("f=");
+        Serial.println(f);
         checkPauseButton(f);
         for(int i=0;i<5;i++) {
           m1=freq(f);
@@ -252,6 +256,8 @@ void loop() {
       
     case sweep_n_sinusoids:
       for(float f=loadFrequency();f<=f2;f+=0.01) {
+        Serial.print("f=");
+        Serial.println(f);
         checkPauseButton(f);
         for(int i=0;i<5;i++) {
           m1=freq(f);
