@@ -265,7 +265,7 @@ void loop() {
           delay(n_sinusoids*1000/f);
           stop();
           ledOff();
-          delay(1.5*n_sinusoids*1000/f); 
+          delay(n_sinusoids*1000/f); 
         }
       }
       ledOn();
