@@ -89,7 +89,7 @@ const int resetPin = 1;
 
 uint32_t freq(float f)
 {
-  return f * pow(2, 32) / (50000 * cor);
+  return f * pow(2, 32) / (250000 * cor);
 }
 
 void stop()
@@ -103,7 +103,7 @@ void setup() {
   SIM_SCGC6 |= SIM_SCGC6_DAC0;
   DAC0_C0 = DAC_C0_DACEN | DAC_C0_DACRFS;
 
-  timer0.begin(clk, 20); // 20 usec -> f = 50 kHz
+  timer0.begin(clk, 4); // 4 usec -> f = 250 kHz
   pinMode(pausePin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
   pinMode(resetPin, INPUT_PULLUP);
