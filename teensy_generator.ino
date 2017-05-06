@@ -226,7 +226,7 @@ void prompt()
 
 void console()
 {
-  enum State {Menu_S, Prompt_S, Input_S, Autostart_S, AutostartInput_S, Mode_S, ModeInput_S, Reset_S, Start_S, Stop_S};
+  enum State {Menu_S, Prompt_S, Input_S, Autostart_S, AutostartInput_S, Mode_S, ModeInput_S, Reset_S, Start_S, Stop_S, Save_S, SetCurrentFrequency_S, CurrentFrequencyInput_S, JumperRemoved_S, WaitForJumper_S, Shutdown_S};
   static State state = Menu_S;
   char input = 0;
 
@@ -238,14 +238,16 @@ void console()
       Serial.print("2- Mode (");
       displayCurrentMode();
       Serial.println(")");
-      Serial.print("3- Reset saved frequency (f=");
+      Serial.print("3- Reset saved frequency(eeprom f = ");
       Serial.print(loadFrequency());
       Serial.println(" Hz)");
-      Serial.println("4- Start");
-      Serial.println("5- Stop");
-      Serial.print("Current frequency : ");
+      Serial.print("4- Set current frequency (f = ");
       Serial.print(f);
-      Serial.println(" Hz");
+      Serial.println(" Hz)");
+      Serial.println("5- Start");
+      Serial.println("6- Stop");
+      Serial.println("7- Save current frequency");
+      Serial.println("8- Shutdown");
       state=Prompt_S;
       break;
 
@@ -257,6 +259,10 @@ void console()
     case Input_S:
       if(digitalRead(resetPin)==LOW) {
         state=Reset_S;
+        break;
+      }
+      if(digitalRead(pausePin)==HIGH) {
+        state=JumperRemoved_S;
         break;
       }
       if(Serial.available()>0) {
@@ -272,11 +278,20 @@ void console()
           case '3':
             state=Reset_S;
             break;
-          case '4':
-            state=Start_S;
+           case '4':
+            state=SetCurrentFrequency_S;
             break;
           case '5':
+            state=Start_S;
+            break;
+          case '6':
             state=Stop_S;    
+            break;
+          case '7':
+            state=Save_S;
+            break;
+          case '8':
+            state=Shutdown_S;
             break;
           case 'm':
             state=Menu_S;
@@ -383,13 +398,64 @@ void console()
       if(running == false)
         Serial.println("Generator is already stopped.");
       else {
-        Serial.println("Saving frequency.");
-        saveFrequency(f);
         stop();
-        Serial.println("Stopping the generator");
         running=false;
+        Serial.println("Stopping the generator");
       }
       state=Menu_S;
+      break;
+
+    case Save_S:
+      Serial.println("Saving frequency.");
+      saveFrequency(f);
+      state=Menu_S;
+      break;
+
+    case SetCurrentFrequency_S:
+      Serial.println("### Frequency ###");
+      prompt();
+      state=CurrentFrequencyInput_S;
+      break;
+
+    case CurrentFrequencyInput_S:
+      if(Serial.available()>0) {
+        f=Serial.parseFloat();
+        Serial.println(f);
+        Serial.print("Setting current frequency to ");
+        Serial.print(f);
+        Serial.println(" Hz");
+         state=Menu_S;
+      }
+      break;
+
+    case JumperRemoved_S:
+      Serial.println("Jumper removed");
+      Serial.println("Saving frequency");
+      saveFrequency(f);
+      running=false;
+      state=WaitForJumper_S;
+      break;
+
+    case WaitForJumper_S:
+      if(digitalRead(pausePin)==LOW) {
+        running=true;
+        state=Menu_S;
+        break;
+      }
+      if(Serial.available()) {
+        Serial.read();
+        Serial.println("Please put the jumper back.");
+      };
+      break;
+
+    case Shutdown_S:
+      running=false;
+      stop();
+      Serial.println("Saving frequency");
+      saveFrequency(f);
+      ledOff();
+      Serial.println("Generator shut down.");
+      while(1);
       break;
 
     default:
@@ -413,7 +479,7 @@ void loop() {
   }
 
   if(current_mode == single_frequency) {
-    m = freq(121);
+    m = freq(f);
     ledOn();
   }
   else if(current_mode == sweep) {
