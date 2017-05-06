@@ -79,6 +79,9 @@ Mode current_mode = sweep;
 float n_sinusoids = 10;
 float f1 = 0.5;
 float f2 = 121;
+int to=400;
+int tf=600;
+int repetitions=5;
 // ### End of configuration ###
 
 // ### Addresses for variables stored in the eeprom
@@ -515,20 +518,20 @@ void loop() {
     ledOn();
   }
   else if(current_mode == sweep) {
-    for(int i=0;i<5;i++) {
+    for(int i=0;i<repetitions;i++) {
       if(f>f2)
         current_mode = none;
       m=freq(f);
       ledOn();
-      delay(400);
+      delay(to);
       stop();
       ledOff();
-      delay(600); 
+      delay(tf); 
     }
     f+=0.01;
   }
   else if(current_mode == sweep_n_sinusoids) {
-    for(int i=0;i<5;i++) {
+    for(int i=0;i<repetitions;i++) {
       if(f>f2)
         current_mode = none;
       m=freq(f);
