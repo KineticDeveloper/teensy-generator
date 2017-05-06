@@ -278,6 +278,9 @@ void console()
           case '5':
             state=Stop_S;    
             break;
+          case 'm':
+            state=Menu_S;
+            break;
           default:
             Serial.println("Invalid choice");
             state=Menu_S;
