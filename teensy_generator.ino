@@ -71,7 +71,7 @@ volatile uint32_t acc=0, m=0;
 float f=0;
 bool running = false;
 
-enum Mode {single_frequency, sweep, sweep_n_sinusoids, none};
+enum Mode {single_frequency, sweep, sweep_n_sinusoids};
 
 
 // ### Configuration ###
@@ -212,9 +212,6 @@ void displayCurrentMode()
       break;
     case sweep_n_sinusoids:
       Serial.print("sweep_n_sinusoids");
-      break;
-    case none:
-      Serial.print("none");
       break;
     default:
       Serial.print("invalid");
@@ -507,41 +504,35 @@ void loop() {
     return;
   }
 
-  if(current_mode == none) {
-    ledOn();
-    stop();
-    return;
-  }
-
   if(current_mode == single_frequency) {
     m = freq(f);
     ledOn();
   }
   else if(current_mode == sweep) {
-    for(int i=0;i<repetitions;i++) {
-      if(f>f2)
-        current_mode = none;
-      m=freq(f);
-      ledOn();
-      delay(to);
-      stop();
-      ledOff();
-      delay(tf); 
+    if(f<=f2) {
+      for(int i=0;i<repetitions;i++) {
+        m=freq(f);
+        ledOn();
+        delay(to);
+        stop();
+        ledOff();
+        delay(tf); 
+      }
+      f+=0.01;
     }
-    f+=0.01;
   }
   else if(current_mode == sweep_n_sinusoids) {
-    for(int i=0;i<repetitions;i++) {
-      if(f>f2)
-        current_mode = none;
-      m=freq(f);
-      ledOn();
-      delay(n_sinusoids*1000/f);
-      stop();
-      ledOff();
-      delay(n_sinusoids*1000/f);
+    if(f<=f2) {
+      for(int i=0;i<repetitions;i++) {
+        m=freq(f);
+        ledOn();
+        delay(n_sinusoids*1000/f);
+        stop();
+        ledOff();
+        delay(n_sinusoids*1000/f);
+      }
+      f+=0.01;
     }
-    f+=0.01;
   }
   
 
