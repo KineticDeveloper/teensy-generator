@@ -150,18 +150,13 @@ void ledOff()
 
 void saveFrequency(float freq)
 {
-  uint8_t *ptr;
-  ptr = (uint8_t *)&freq;
-  for(unsigned int i=0;i<sizeof(float);i++)
-    EEPROM.write(i, ptr[i]);
+  EEPROM.put(freqAddr, freq);
 }
 
 float loadFrequency()
 {
   float ret=0;
-  uint8_t *ptr = (uint8_t *)&ret;
-  for(unsigned int i=0;i<sizeof(float);i++)
-    ptr[i] = EEPROM.read(i);
+  EEPROM.get(freqAddr, ret);
   return ret;
 }
 
