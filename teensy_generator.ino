@@ -224,6 +224,21 @@ void prompt()
   Serial.print("> ");
 }
 
+bool availableInput()
+{
+  if(Serial.available() == 0)
+    return false;
+  if(Serial.peek() == '\r') {
+    Serial.read();
+    return false;
+  }
+  if(Serial.peek() == '\n') {
+    Serial.read();
+    return false;
+  }
+  return true;
+}
+
 void console()
 {
   enum State {Menu_S, Prompt_S, Input_S, Autostart_S, AutostartInput_S, Mode_S, ModeInput_S, Reset_S, Start_S, Stop_S, Save_S, SetCurrentFrequency_S, CurrentFrequencyInput_S, JumperRemoved_S, WaitForJumper_S, Shutdown_S};
@@ -233,21 +248,36 @@ void console()
   switch(state) {
     case Menu_S:
       Serial.println("### Menu ###");
-      Serial.print("1- Autostart : ");
-      Serial.println(loadAutostart() ? "On" : "Off");
-      Serial.print("2- Mode (");
-      displayCurrentMode();
-      Serial.println(")");
-      Serial.print("3- Reset saved frequency(eeprom f = ");
-      Serial.print(loadFrequency());
-      Serial.println(" Hz)");
-      Serial.print("4- Set current frequency (f = ");
-      Serial.print(f);
-      Serial.println(" Hz)");
+      Serial.println("1- Autostart");
+      Serial.println("2- Mode");
+      Serial.print("3- Reset saved frequency to ");
+      Serial.print(f1);
+      Serial.println(" Hz");
+      Serial.println("4- Set current frequency");
       Serial.println("5- Start");
       Serial.println("6- Stop");
       Serial.println("7- Save current frequency");
       Serial.println("8- Shutdown");
+      Serial.println("### EEPROM ###");
+      Serial.print("* Autostart = ");
+      Serial.println(loadAutostart() ? "On" : "Off");
+      Serial.print("* Mode = ");
+      displayCurrentMode();
+      Serial.println("");
+      Serial.print("* frequency = ");
+      Serial.print(loadFrequency());
+      Serial.println(" Hz");
+      Serial.println("### RAM ###");
+      Serial.print("f = ");
+      Serial.print(f);
+      Serial.println(" Hz");
+      Serial.print("running = ");
+      Serial.println(running ? "true" : "false");
+      Serial.print("m = 0x");
+      Serial.println(m, HEX);
+      Serial.print("acc = 0x");
+      Serial.println(acc, HEX);
+      
       state=Prompt_S;
       break;
 
@@ -265,7 +295,7 @@ void console()
         state=JumperRemoved_S;
         break;
       }
-      if(Serial.available()>0) {
+      if(availableInput()) {
         input = Serial.read();
         Serial.println(input);
         switch(input) {
@@ -314,7 +344,7 @@ void console()
       break;
 
     case AutostartInput_S:
-      if(Serial.available()>0) {
+      if(availableInput()) {
         input = Serial.read();
         Serial.println(input);
         switch(input) {
@@ -348,7 +378,7 @@ void console()
       break;
 
     case ModeInput_S:
-      if(Serial.available()>0) {
+      if(availableInput()) {
         input = Serial.read();
         Serial.println(input);
         switch(input) {
@@ -418,7 +448,7 @@ void console()
       break;
 
     case CurrentFrequencyInput_S:
-      if(Serial.available()>0) {
+      if(availableInput()) {
         f=Serial.parseFloat();
         Serial.println(f);
         Serial.print("Setting current frequency to ");
@@ -442,7 +472,7 @@ void console()
         state=Menu_S;
         break;
       }
-      if(Serial.available()) {
+      if(availableInput()) {
         Serial.read();
         Serial.println("Please put the jumper back.");
       };
@@ -469,8 +499,10 @@ void loop() {
 
   console();
 
-  if(running == false)
+  if(running == false) {
+    ledOff();
     return;
+  }
 
   if(current_mode == none) {
     ledOn();
