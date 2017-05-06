@@ -67,27 +67,33 @@ uint16_t sineTable[512] = {
   0x737,0x750,0x769,0x782,0x79b,0x7b4,0x7cd,0x7e6,
 };
 
+enum Mode {single_frequency, sweep, sweep_n_sinusoids};
+
 volatile uint32_t acc=0, m=0;
 float f=0;
 bool running = false;
+int to=0;
+int tf=0;
+int repetitions=0;
+float n_sinusoids = 0;
+Mode current_mode = sweep;
 
-enum Mode {single_frequency, sweep, sweep_n_sinusoids};
+
 
 
 // ### Configuration ###
-Mode current_mode = sweep;
-float n_sinusoids = 10;
 float f1 = 0.5;
 float f2 = 121;
-int to=400;
-int tf=600;
-int repetitions=5;
 // ### End of configuration ###
 
 // ### Addresses for variables stored in the eeprom
 int freqAddr = 0;
 int autostartAddr = freqAddr + sizeof(float);
 int modeAddr = autostartAddr + 1;
+int toAddr = modeAddr + sizeof(Mode);
+int tfAddr = toAddr + sizeof(int);
+int repetitionsAddr = tfAddr + sizeof(int);
+int nSinusoidsAddr = repetitionsAddr + sizeof(int);
 
 IntervalTimer timer0;
 
@@ -122,6 +128,11 @@ void setup() {
   if(loadAutostart())
     running = true;
   current_mode = loadMode();
+
+  to = loadTo();
+  tf = loadTf();
+  repetitions=loadRepetitions();
+  n_sinusoids=loadNSinusoids();
 }
 
 void clk()
@@ -214,6 +225,58 @@ void displayCurrentMode()
   }
 }
 
+void saveTo(int t)
+{
+  EEPROM.put(toAddr, t);
+  to=t;
+}
+
+int loadTo()
+{
+  int ret=0;
+  EEPROM.get(toAddr, ret);
+  return ret;
+}
+
+void saveTf(int t)
+{
+  EEPROM.put(tfAddr, t);
+  tf=t;
+}
+
+int loadTf()
+{
+  int ret=0;
+  EEPROM.get(tfAddr, ret);
+  return ret;
+}
+
+void saveRepetitions(int r)
+{
+  EEPROM.put(repetitionsAddr, r);
+  repetitions=r;
+}
+
+int loadRepetitions()
+{
+  int ret=0;
+  EEPROM.get(repetitionsAddr, ret);
+  return ret;
+}
+
+void saveNSinusoids(float n)
+{
+  EEPROM.put(nSinusoidsAddr, n);
+  n_sinusoids=n;
+}
+
+float loadNSinusoids()
+{
+  float ret=0;
+  EEPROM.get(nSinusoidsAddr, ret);
+  return ret;
+}
+
 void prompt()
 {
   Serial.print("> ");
@@ -233,6 +296,29 @@ bool availableInput()
   }
   return true;
 }
+
+int waitInt(String name)
+{
+  int ret;
+  Serial.print(name);
+  Serial.print(" = ");
+  while(Serial.available()==0);
+  ret = Serial.parseInt();
+  Serial.println(ret);
+  return ret;
+}
+
+int waitFloat(String name)
+{
+  float ret;
+  Serial.print(name);
+  Serial.print(" = ");
+  while(Serial.available()==0);
+  ret = Serial.parseFloat();
+  Serial.println(ret);
+  return ret;
+}
+
 
 void console()
 {
@@ -262,6 +348,16 @@ void console()
       Serial.print("* frequency = ");
       Serial.print(loadFrequency());
       Serial.println(" Hz");
+      Serial.print("* to = ");
+      Serial.print(loadTo());
+      Serial.println(" ms");
+      Serial.print("* tf = ");
+      Serial.print(loadTf());
+      Serial.println(" ms");
+      Serial.print("* repetitions = ");
+      Serial.println(loadRepetitions());
+      Serial.print("* n_sinusoids = ");
+      Serial.println(loadNSinusoids());
       Serial.println("### RAM ###");
       Serial.print("f = ");
       Serial.print(f);
@@ -365,9 +461,7 @@ void console()
       Serial.println("### Mode ###");
       Serial.println("1- Single frequency");
       Serial.println("2- Sweep");
-      Serial.print("3- Sweep with ");
-      Serial.print(n_sinusoids);
-      Serial.println(" sinusoids");
+      Serial.println("3- Sweep with n sinusoids");
       prompt();
       state=ModeInput_S;
       break;
@@ -385,12 +479,17 @@ void console()
             break;
           case '2':
             Serial.println("Setting sweep mode");
+            saveTo(waitInt("to"));
+            saveTf(waitInt("tf"));
+            saveRepetitions(waitInt("repetitions"));
             current_mode = sweep;
             saveMode(current_mode);
             state=Menu_S;
             break;
           case '3':
             Serial.println("Setting sweep with n sinudoids mode");
+            saveNSinusoids(waitFloat("n_sinudoids"));
+            saveRepetitions(waitInt("repetitions"));
             current_mode = sweep_n_sinusoids;
             saveMode(current_mode);
             state=Menu_S;
