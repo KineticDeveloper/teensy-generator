@@ -68,8 +68,10 @@ uint16_t sineTable[512] = {
 };
 
 volatile uint32_t acc=0, m=0;
+float f=0;
+bool running = false;
 
-enum Mode {single_frequency, sweep, sweep_n_sinusoids};
+enum Mode {single_frequency, sweep, sweep_n_sinusoids, none};
 
 
 // ### Configuration ###
@@ -78,6 +80,11 @@ float n_sinusoids = 10;
 float f1 = 0.5;
 float f2 = 121;
 // ### End of configuration ###
+
+// ### Addresses for variables stored in the eeprom
+int freqAddr = 0;
+int autostartAddr = freqAddr + sizeof(float);
+int modeAddr = autostartAddr + 1;
 
 IntervalTimer timer0;
 
@@ -105,31 +112,19 @@ void setup() {
 
   timer0.begin(clk, 4); // 4 usec -> f = 250 kHz
   pinMode(pausePin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
   pinMode(resetPin, INPUT_PULLUP);
+  pinMode(ledPin, OUTPUT);
 
-  if(digitalRead(resetPin)==LOW) {
-    Serial.print("Resetting initial frequency to ");
-    Serial.println(f1);
-    saveFrequency(f1);
-    ledOn();
-    delay(1000);
-    ledOff();
-    delay(1000);
-    ledOn();
-    delay(1000);
-    ledOff();
-    while(1);
-  }
-
+  f = loadFrequency();
+  if(loadAutostart())
+    running = true;
+  current_mode = loadMode();
 }
 
 void clk()
 {
   *(int16_t *)&(DAC0_DAT0L) = sineTable[acc>>23];
   acc+=m;
-     
-
 }
 
 void checkPauseButton(float currentFrenquency)
@@ -167,52 +162,286 @@ float loadFrequency()
   return ret;
 }
 
-void loop() {
-  
+void resetFrequency()
+{
+    saveFrequency(f1);
+    f=f1;
+    ledOn();
+    delay(1000);
+    ledOff();
+    delay(1000);
+    ledOn();
+    delay(1000);
+    ledOff();
+}
+
+bool loadAutostart()
+{
+  return EEPROM.read(autostartAddr) == 1 ? true : false;
+}
+
+void saveAutostart(bool val)
+{
+  if(val==true)
+    EEPROM.write(autostartAddr, 1);
+  else
+    EEPROM.write(autostartAddr, 0);
+}
+
+Mode loadMode()
+{
+  return (Mode)EEPROM.read(modeAddr);
+}
+
+void saveMode(Mode ms)
+{
+  EEPROM.write(modeAddr, (byte)ms);
+}
+
+void displayCurrentMode()
+{
   switch(current_mode) {
-    
     case single_frequency:
-      m = freq(121);
-      ledOn();
-      while(1);
+      Serial.print("single_frequency");
       break;
-      
     case sweep:
-      for(float f=loadFrequency();f<=f2;f+=0.01) {
-        Serial.print("f=");
-        Serial.println(f);
-        checkPauseButton(f);
-        for(int i=0;i<5;i++) {
-          m=freq(f);
-          ledOn();
-          delay(400);
-          stop();
-          ledOff();
-          delay(600); 
-        }
-      }
-      ledOn();
-      while(1);
+      Serial.print("sweep");
       break;
-      
     case sweep_n_sinusoids:
-      for(float f=loadFrequency();f<=f2;f+=0.01) {
-        Serial.print("f=");
-        Serial.println(f);
-        checkPauseButton(f);
-        for(int i=0;i<5;i++) {
-          m=freq(f);
-          ledOn();
-          delay(n_sinusoids*1000/f);
-          stop();
-          ledOff();
-          delay(n_sinusoids*1000/f); 
-        }
-      }
-      ledOn();
-      while(1);
+      Serial.print("sweep_n_sinusoids");
+      break;
+    case none:
+      Serial.print("none");
+      break;
+    default:
+      Serial.print("invalid");
       break;
   }
+}
+
+void prompt()
+{
+  Serial.print("> ");
+}
+
+void console()
+{
+  enum State {Menu_S, Prompt_S, Input_S, Autostart_S, AutostartInput_S, Mode_S, ModeInput_S, Reset_S, Start_S, Stop_S};
+  static State state = Menu_S;
+  char input = 0;
+
+  switch(state) {
+    case Menu_S:
+      Serial.println("### Menu ###");
+      Serial.print("1- Autostart : ");
+      Serial.println(loadAutostart() ? "On" : "Off");
+      Serial.print("2- Mode (");
+      displayCurrentMode();
+      Serial.println(")");
+      Serial.print("3- Reset saved frequency (f=");
+      Serial.print(loadFrequency());
+      Serial.println(" Hz)");
+      Serial.println("4- Start");
+      Serial.println("5- Stop");
+      Serial.print("Current frequency : ");
+      Serial.print(f);
+      Serial.println(" Hz");
+      state=Prompt_S;
+      break;
+
+    case Prompt_S:
+      prompt();
+      state=Input_S;
+      break;
+      
+    case Input_S:
+      if(digitalRead(resetPin)==LOW) {
+        state=Reset_S;
+        break;
+      }
+      if(Serial.available()>0) {
+        input = Serial.read();
+        Serial.println(input);
+        switch(input) {
+          case '1':
+            state=Autostart_S;
+            break;
+          case '2':
+            state=Mode_S;
+            break;
+          case '3':
+            state=Reset_S;
+            break;
+          case '4':
+            state=Start_S;
+            break;
+          case '5':
+            state=Stop_S;    
+            break;
+          default:
+            Serial.println("Invalid choice");
+            state=Menu_S;
+            break;
+        }
+          
+      }
+      break;
+      
+    case Autostart_S:
+      Serial.println("### Autostart ###");
+      Serial.println("1- On");
+      Serial.println("2- Off");
+      prompt();
+      state=AutostartInput_S;
+      break;
+
+    case AutostartInput_S:
+      if(Serial.available()>0) {
+        input = Serial.read();
+        Serial.println(input);
+        switch(input) {
+          case '1':
+            Serial.println("Setting autostart to On");
+            saveAutostart(true);
+            state=Menu_S;
+            break;
+          case '2':
+            Serial.println("Setting autostart to off");
+            saveAutostart(false);
+            state=Menu_S;
+            break;
+          default:
+            Serial.println("Invalid choice");
+            state=Autostart_S;
+            break;
+        }          
+      }
+      break;
+
+    case Mode_S:
+      Serial.println("### Mode ###");
+      Serial.println("1- Single frequency");
+      Serial.println("2- Sweep");
+      Serial.print("3- Sweep with ");
+      Serial.print(n_sinusoids);
+      Serial.println(" sinusoids");
+      prompt();
+      state=ModeInput_S;
+      break;
+
+    case ModeInput_S:
+      if(Serial.available()>0) {
+        input = Serial.read();
+        Serial.println(input);
+        switch(input) {
+          case '1':
+            Serial.println("Setting single frequency mode");
+            current_mode = single_frequency;
+            saveMode(current_mode);
+            state=Menu_S;
+            break;
+          case '2':
+            Serial.println("Setting sweep mode");
+            current_mode = sweep;
+            saveMode(current_mode);
+            state=Menu_S;
+            break;
+          case '3':
+            Serial.println("Setting sweep with n sinudoids mode");
+            current_mode = sweep_n_sinusoids;
+            saveMode(current_mode);
+            state=Menu_S;
+            break;
+          default:
+            Serial.println("Invalid choice");
+            state=Mode_S;
+            break;
+        }          
+      }
+      break;
+      
+    case Reset_S:
+      Serial.println("Resetting frequency");
+      resetFrequency();
+      state=Menu_S;
+      break;
+
+    case Start_S:
+      if(running ==true)
+        Serial.println("Generator is already running.");
+      else {
+        Serial.println("Starting the generator.");
+        running=true;
+      }
+      state=Menu_S;
+      break;
+
+    case Stop_S:
+      if(running == false)
+        Serial.println("Generator is already stopped.");
+      else {
+        Serial.println("Saving frequency.");
+        saveFrequency(f);
+        stop();
+        Serial.println("Stopping the generator");
+        running=false;
+      }
+      state=Menu_S;
+      break;
+
+    default:
+      state=Menu_S;
+      break;
+      
+  }
+}
+
+void loop() {
+
+  console();
+
+  if(running == false)
+    return;
+
+  if(current_mode == none) {
+    ledOn();
+    stop();
+    return;
+  }
+
+  if(current_mode == single_frequency) {
+    m = freq(121);
+    ledOn();
+  }
+  else if(current_mode == sweep) {
+    for(int i=0;i<5;i++) {
+      if(f>f2)
+        current_mode = none;
+      m=freq(f);
+      ledOn();
+      delay(400);
+      stop();
+      ledOff();
+      delay(600); 
+    }
+    f+=0.01;
+  }
+  else if(current_mode == sweep_n_sinusoids) {
+    for(int i=0;i<5;i++) {
+      if(f>f2)
+        current_mode = none;
+      m=freq(f);
+      ledOn();
+      delay(n_sinusoids*1000/f);
+      stop();
+      ledOff();
+      delay(n_sinusoids*1000/f);
+    }
+    f+=0.01;
+  }
+  
+
+
 }
 
 
