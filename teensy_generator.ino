@@ -12,9 +12,6 @@ int repetitions=0;
 float n_sinusoids = 0;
 Mode current_mode = sweep;
 
-
-
-
 // ### Configuration ###
 float f1 = 0.5;
 float f2 = 121;
