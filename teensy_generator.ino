@@ -233,7 +233,7 @@ int waitInt(String name)
   int ret;
   Serial.print(name);
   Serial.print(" = ");
-  while(Serial.available()==0);
+  while(availableInput()==false);
   ret = Serial.parseInt();
   Serial.println(ret);
   return ret;
@@ -244,7 +244,7 @@ int waitFloat(String name)
   float ret;
   Serial.print(name);
   Serial.print(" = ");
-  while(Serial.available()==0);
+  while(availableInput()==false);
   ret = Serial.parseFloat();
   Serial.println(ret);
   return ret;
