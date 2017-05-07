@@ -259,17 +259,6 @@ void console()
 
   switch(state) {
     case Menu_S:
-      Serial.println("### Menu ###");
-      Serial.println("1- Autostart");
-      Serial.println("2- Mode");
-      Serial.print("3- Reset saved frequency to ");
-      Serial.print(f1);
-      Serial.println(" Hz");
-      Serial.println("4- Set current frequency");
-      Serial.println("5- Start");
-      Serial.println("6- Stop");
-      Serial.println("7- Save current frequency");
-      Serial.println("8- Shutdown");
       Serial.println("### EEPROM ###");
       Serial.print("* Autostart = ");
       Serial.println(loadAutostart() ? "On" : "Off");
@@ -299,6 +288,18 @@ void console()
       Serial.println(m, HEX);
       Serial.print("acc = 0x");
       Serial.println(acc, HEX);
+      Serial.println("### Menu ###");
+      Serial.println("1- Autostart");
+      Serial.println("2- Mode");
+      Serial.print("3- Reset saved frequency to ");
+      Serial.print(f1);
+      Serial.println(" Hz");
+      Serial.println("4- Set current frequency");
+      Serial.println("5- Start");
+      Serial.println("6- Stop");
+      Serial.println("7- Save current frequency");
+      Serial.println("8- Shutdown");
+
       
       state=Prompt_S;
       break;
