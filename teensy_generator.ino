@@ -72,14 +72,6 @@ void clk()
   acc+=m;
 }
 
-void checkPauseButton(float currentFrenquency)
-{
-  if(digitalRead(pausePin) == HIGH) // HIGH means that the jumper is removed so we want to pause
-    saveFrequency(currentFrenquency);
-  while(digitalRead(pausePin) == HIGH)
-    delay(100);
-}
-
 void ledOn()
 {
   digitalWrite(ledPin, HIGH);
