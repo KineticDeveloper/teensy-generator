@@ -4,6 +4,7 @@
 #include "mode.h"
 #include "misc.h"
 #include "config.h"
+#include "mode.h"
 
 
 
@@ -60,23 +61,6 @@ void clk()
   acc+=m;
 }
 
-void displayCurrentMode()
-{
-  switch(current_mode) {
-    case single_frequency:
-      Serial.print("single_frequency");
-      break;
-    case sweep:
-      Serial.print("sweep");
-      break;
-    case sweep_n_sinusoids:
-      Serial.print("sweep_n_sinusoids");
-      break;
-    default:
-      Serial.print("invalid");
-      break;
-  }
-}
 
 
 
@@ -135,7 +119,7 @@ void console()
       Serial.print("* Autostart = ");
       Serial.println(loadAutostart() ? "On" : "Off");
       Serial.print("* Mode = ");
-      displayCurrentMode();
+      displayMode(current_mode);
       Serial.println("");
       Serial.print("* frequency = ");
       Serial.print(loadFrequency());
