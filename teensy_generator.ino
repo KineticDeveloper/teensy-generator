@@ -48,12 +48,12 @@ void setup() {
   pinMode(resetPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
 
-  loadAllVariables();
+  loadAllVariables(); // We load all the variables from the EEPROM into the global variables
 }
 
 void loop() {
 
-  console();
+  console(); // We check for input, and manage it with a state machine
 
   if(running == false) {
     ledOff();

@@ -15,6 +15,11 @@ extern float n_sinusoids;
 extern Mode current_mode;
 extern void stop();
 
+
+// This function is a state machine
+// It responds to user input, and modifies the global variables above, in order to communicate with the
+// generator code in the main module.
+
 void console()
 {
   enum State {Menu_S, Prompt_S, Input_S, Autostart_S, AutostartInput_S, Mode_S, ModeInput_S, Reset_S, Start_S, Stop_S, Save_S, SetCurrentFrequency_S, CurrentFrequencyInput_S, JumperRemoved_S, WaitForJumper_S, Shutdown_S};
