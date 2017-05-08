@@ -32,6 +32,12 @@ void stop()
   m=0;
 }
 
+void clk()
+{
+  *(int16_t *)&(DAC0_DAT0L) = sineTable[acc>>23];
+  acc+=m;
+}
+
 void setup() {
   Serial.begin(9600);
   SIM_SCGC6 |= SIM_SCGC6_DAC0;
@@ -44,16 +50,6 @@ void setup() {
 
   loadAllVariables();
 }
-
-void clk()
-{
-  *(int16_t *)&(DAC0_DAT0L) = sineTable[acc>>23];
-  acc+=m;
-}
-
-
-
-
 
 void loop() {
 
@@ -94,9 +90,6 @@ void loop() {
       f+=0.01;
     }
   }
-  
-
-
 }
 
 
