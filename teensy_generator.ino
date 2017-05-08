@@ -1,7 +1,11 @@
-#include <EEPROM.h>
-#include "sineTable.h"
 
-enum Mode {single_frequency, sweep, sweep_n_sinusoids};
+#include "sineTable.h"
+#include "memory.h"
+#include "mode.h"
+#include "misc.h"
+#include "config.h"
+
+
 
 volatile uint32_t acc=0, m=0;
 float f=0;
@@ -12,27 +16,11 @@ int repetitions=0;
 float n_sinusoids = 0;
 Mode current_mode = sweep;
 
-// ### Configuration ###
-float f1 = 0.5;
-float f2 = 121;
-// ### End of configuration ###
-
-// ### Addresses for variables stored in the eeprom
-int freqAddr = 0;
-int autostartAddr = freqAddr + sizeof(float);
-int modeAddr = autostartAddr + 1;
-int toAddr = modeAddr + sizeof(Mode);
-int tfAddr = toAddr + sizeof(int);
-int repetitionsAddr = tfAddr + sizeof(int);
-int nSinusoidsAddr = repetitionsAddr + sizeof(int);
-
 IntervalTimer timer0;
 
 float cor=1; // cor = measured frequency (with frequency counter) divided by desired frequency
 
-const int pausePin = 0;
-const int ledPin = 13;
-const int resetPin = 1;
+
 
 uint32_t freq(float f)
 {
@@ -80,63 +68,8 @@ void checkPauseButton(float currentFrenquency)
     delay(100);
 }
 
-void ledOn()
-{
-  digitalWrite(ledPin, HIGH);
-}
 
-void ledOff()
-{
-  digitalWrite(ledPin, LOW);
-}
 
-void saveFrequency(float freq)
-{
-  EEPROM.put(freqAddr, freq);
-}
-
-float loadFrequency()
-{
-  float ret=0;
-  EEPROM.get(freqAddr, ret);
-  return ret;
-}
-
-void resetFrequency()
-{
-    saveFrequency(f1);
-    f=f1;
-    ledOn();
-    delay(1000);
-    ledOff();
-    delay(1000);
-    ledOn();
-    delay(1000);
-    ledOff();
-}
-
-bool loadAutostart()
-{
-  return EEPROM.read(autostartAddr) == 1 ? true : false;
-}
-
-void saveAutostart(bool val)
-{
-  if(val==true)
-    EEPROM.write(autostartAddr, 1);
-  else
-    EEPROM.write(autostartAddr, 0);
-}
-
-Mode loadMode()
-{
-  return (Mode)EEPROM.read(modeAddr);
-}
-
-void saveMode(Mode ms)
-{
-  EEPROM.write(modeAddr, (byte)ms);
-}
 
 void displayCurrentMode()
 {
@@ -156,57 +89,7 @@ void displayCurrentMode()
   }
 }
 
-void saveTo(int t)
-{
-  EEPROM.put(toAddr, t);
-  to=t;
-}
 
-int loadTo()
-{
-  int ret=0;
-  EEPROM.get(toAddr, ret);
-  return ret;
-}
-
-void saveTf(int t)
-{
-  EEPROM.put(tfAddr, t);
-  tf=t;
-}
-
-int loadTf()
-{
-  int ret=0;
-  EEPROM.get(tfAddr, ret);
-  return ret;
-}
-
-void saveRepetitions(int r)
-{
-  EEPROM.put(repetitionsAddr, r);
-  repetitions=r;
-}
-
-int loadRepetitions()
-{
-  int ret=0;
-  EEPROM.get(repetitionsAddr, ret);
-  return ret;
-}
-
-void saveNSinusoids(float n)
-{
-  EEPROM.put(nSinusoidsAddr, n);
-  n_sinusoids=n;
-}
-
-float loadNSinusoids()
-{
-  float ret=0;
-  EEPROM.get(nSinusoidsAddr, ret);
-  return ret;
-}
 
 void prompt()
 {
