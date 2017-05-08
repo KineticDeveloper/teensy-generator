@@ -7,6 +7,8 @@
 #include "console.h"
 #include "memory.h"
 
+// #########################################################################
+// These global variables are used to drive the generator from other modules
 volatile uint32_t acc=0, m=0;
 float f=0;
 bool running = false;
@@ -15,6 +17,7 @@ int tf=0;
 int repetitions=0;
 float n_sinusoids = 0;
 Mode current_mode = sweep;
+// #########################################################################
 
 IntervalTimer timer0;
 
