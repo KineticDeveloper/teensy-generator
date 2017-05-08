@@ -18,13 +18,9 @@ Mode current_mode = sweep;
 
 IntervalTimer timer0;
 
-float cor=1; // cor = measured frequency (with frequency counter) divided by desired frequency
-
-
-
 uint32_t freq(float f)
 {
-  return f * pow(2, 32) / (250000 * cor);
+  return f * pow(2, 32) / 250000;
 }
 
 void stop()
