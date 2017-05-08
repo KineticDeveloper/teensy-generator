@@ -10,6 +10,7 @@ extern int tf;
 extern int repetitions;
 extern int n_sinusoids;
 extern Mode current_mode;
+extern bool running;
 
 // ### Addresses for variables stored in the eeprom
 int freqAddr = 0;
@@ -118,4 +119,17 @@ float loadNSinusoids()
   float ret=0;
   EEPROM.get(nSinusoidsAddr, ret);
   return ret;
+}
+
+void loadAllVariables()
+{
+  f = loadFrequency();
+  if(loadAutostart())
+    running = true;
+  current_mode = loadMode();
+
+  to = loadTo();
+  tf = loadTf();
+  repetitions=loadRepetitions();
+  n_sinusoids=loadNSinusoids();
 }

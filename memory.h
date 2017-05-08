@@ -18,5 +18,6 @@ void saveRepetitions(int);
 int loadRepetitions();
 void saveNSinusoids(float);
 float loadNSinusoids();
+void loadAllVariables();  // This function loads all the variables stored in the eeprom into the global variables
 
 #endif
