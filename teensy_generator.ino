@@ -1,4 +1,4 @@
-
+#include <U8g2lib.h>
 #include "sineTable.h"
 #include "mode.h"
 #include "misc.h"
@@ -19,6 +19,7 @@ float n_sinusoids = 0;
 Mode current_mode = sweep;
 // #########################################################################
 
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 IntervalTimer timer0;
 
 uint32_t freq(float f)
@@ -49,6 +50,13 @@ void setup() {
   pinMode(ledPin, OUTPUT);
 
   loadAllVariables(); // We load all the variables from the EEPROM into the global variables
+  u8g2.begin();
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  u8g2.setCursor(0, 20);
+
+  u8g2.println("Hello, world!");
+  u8g2.sendBuffer();
 }
 
 void loop() {
