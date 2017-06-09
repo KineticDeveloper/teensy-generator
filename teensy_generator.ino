@@ -1,3 +1,4 @@
+#include <RotaryEncoder.h>
 #include <U8g2lib.h>
 #include "sineTable.h"
 #include "mode.h"
@@ -21,6 +22,7 @@ Mode current_mode = sweep;
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 IntervalTimer timer0;
+RotaryEncoder encoder(5,6);
 
 uint32_t freq(float f)
 {
@@ -60,6 +62,22 @@ void setup() {
 }
 
 void loop() {
+  static int m=0;
+  static int pos=0;
+  Serial.println(millis()-m);
+  m=millis();
+  encoder.tick();
+  int newPos = encoder.getPosition();
+  if(pos != newPos) {
+    u8g2.clearBuffer();
+    u8g2.setCursor(0,20);
+    u8g2.print(encoder.getPosition());
+    u8g2.sendBuffer();
+    pos = newPos;
+  }
+  //Serial.println(encoder.getPosition());
+
+  return;
 
   console(); // We check for input, and manage it with a state machine
 
