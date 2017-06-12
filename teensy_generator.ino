@@ -5,7 +5,7 @@
 #include "misc.h"
 #include "config.h"
 #include "mode.h"
-#include "console.h"
+#include "state_machine.h"
 #include "memory.h"
 
 // #########################################################################
@@ -79,7 +79,7 @@ void loop() {
 
   return;
 
-  console(); // We check for input, and manage it with a state machine
+  state_machine(); // We check for input, and manage it with a state machine
 
   if(running == false) {
     ledOff();
