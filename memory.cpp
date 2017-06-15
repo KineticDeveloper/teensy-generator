@@ -1,7 +1,6 @@
 #include "Arduino.h"
 #include <EEPROM.h>
 #include "mode.h"
-#include "misc.h"
 #include "config.h"
 
 extern float f;
@@ -37,13 +36,6 @@ void resetFrequency()
 {
     saveFrequency(f1);
     f=f1;
-    ledOn();
-    delay(1000);
-    ledOff();
-    delay(1000);
-    ledOn();
-    delay(1000);
-    ledOff();
 }
 
 bool loadAutostart()

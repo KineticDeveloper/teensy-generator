@@ -2,7 +2,6 @@
 #include <U8g2lib.h>
 #include "sineTable.h"
 #include "mode.h"
-#include "misc.h"
 #include "config.h"
 #include "mode.h"
 #include "state_machine.h"
