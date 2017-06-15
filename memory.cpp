@@ -4,6 +4,7 @@
 #include "config.h"
 
 extern float f;
+extern int amp;
 extern int to;
 extern int tf;
 extern int repetitions;

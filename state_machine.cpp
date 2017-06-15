@@ -8,6 +8,7 @@
 
 extern volatile uint32_t acc, m;
 extern float f;
+//extern int amp;
 extern bool running;
 extern int to;
 extern int tf;
@@ -62,7 +63,10 @@ void state_machine(Event evt)
       break;
       
     case Manual_S:
-      printScreen("f= a=");
+      //printScreen("f= " + String(f, 2) + " amp=" + String(amp));
+      Serial.println("f="+String(f,2));
+      Serial.println(f);
+      Serial.println(n_sinusoids);
       if(evt == BT1)
         state = MenuManual_S;
       break;
@@ -80,9 +84,6 @@ void state_machine(Event evt)
   
       break;
       
-    case UPDATE_EVT:
-      break; 
-
     default:
       state=MenuManual_S;
       break;
