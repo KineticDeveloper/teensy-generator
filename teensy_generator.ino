@@ -27,6 +27,8 @@ RotaryEncoder encoder2(encoder2_pin1, encoder2_pin2);
 
 Bounce debouncer1 = Bounce();
 Bounce debouncer2 = Bounce();
+volatile bool button1_pressed = false;
+volatile bool button2_pressed = false;
 
 IntervalTimer timer1;  // used to check buttons and rotary encoders
 
@@ -51,9 +53,16 @@ void clk() // timer0 callback for the DDS
 void tick() // timer1 callback for the buttons and encoders
 {
   encoder1.tick();
+  
   encoder2.tick();
   debouncer1.update();
+  if(debouncer1.fell()) {
+    button1_pressed = true;
+  }
   debouncer2.update();  
+  if(debouncer2.fell()) {
+    button2_pressed = true;
+  }
 }
 
 void setup() {
@@ -97,31 +106,14 @@ void loop() {
     state_machine(K2L);
   encPos2=newEncPos2;
 
-
-  Serial.print(debouncer1.read());
-  Serial.print(" - ");
-  Serial.println(debouncer2.read());
-  
-  
-  if(debouncer1.fell()) {
-    Serial.println("BT1 fell");
+  if(button1_pressed) {
     state_machine(BT1);
+    button1_pressed=false;
   }
-  if(debouncer2.fell()) {
-    Serial.println("BT2 fell");
+  if(button2_pressed) {
     state_machine(BT2);
+    button2_pressed=false;
   }
-
-  if(debouncer1.rose()) {
-    Serial.println("BT1 rose");
-    state_machine(BT1);
-  }
-  if(debouncer2.rose()) {
-    Serial.println("BT2 fell");
-    state_machine(BT2);
-  }
-
-
 
   return;
   
