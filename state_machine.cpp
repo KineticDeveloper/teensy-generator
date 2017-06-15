@@ -1,8 +1,6 @@
 #include "Arduino.h"
 #include "state_machine.h"
 #include "screen.h"
-#include "memory.h"
-#include "mode.h"
 #include "config.h"
 
 

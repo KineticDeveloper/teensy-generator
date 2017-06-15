@@ -2,11 +2,8 @@
 #include <RotaryEncoder.h>
 #include <U8g2lib.h>
 #include "sineTable.h"
-#include "mode.h"
 #include "config.h"
-#include "mode.h"
 #include "state_machine.h"
-#include "memory.h"
 
 // #########################################################################
 // These global variables are used to drive the generator from other modules
