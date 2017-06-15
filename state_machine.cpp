@@ -3,7 +3,6 @@
 #include "screen.h"
 #include "memory.h"
 #include "mode.h"
-#include "io.h"
 #include "config.h"
 
 
@@ -25,36 +24,67 @@ extern void stop();
 
 void state_machine(Event evt)
 {
-  enum State {MenuFrequency_S, MenuAmplitude_S, MenuSweep_S, Frequency_S, Amplitude_S};
-  static State state = Frequency_S;
+  enum State {MenuManual_S, MenuSweep_S, MenuThreshold_S, Manual_S, Sweep_S, Threshold_S};
+  static State state = MenuManual_S;
 
-  Serial.println(evt);
+  if(evt != UPDATE_EVT)
+    Serial.println(evt);
 
   switch(state) {
     
-    case MenuFrequency_S:
-      printScreen("Frequence");
-      if(evt == K1R)
-        state = MenuAmplitude_S;
-        break;
-        
-    case MenuAmplitude_S:
-      printScreen("Amplitude");
-      if(evt == K1L)
-        state = MenuFrequency_S;  
+    case MenuManual_S:
+      printScreen("Manuel");
+      Serial.println("Manuel");
       if(evt == K1R)
         state = MenuSweep_S;
+      else if(evt == BT2)
+        state = Manual_S;
+      Serial.print("going to state ");
+      Serial.println(state);
       break;
-      
+        
     case MenuSweep_S:
       printScreen("Balayage");
       if(evt == K1L)
-        state = MenuAmplitude_S;
+        state = MenuManual_S;  
+      else if(evt == K1R)
+        state = MenuThreshold_S;
+      else if(evt == BT2)
+        state = Sweep_S;
+      break;
+
+    case MenuThreshold_S:
+      printScreen("Mesure seuil");
+      if(evt == K1L)
+        state = MenuSweep_S;
+      else if(evt == BT2)
+        state = Threshold_S;
       break;
       
+    case Manual_S:
+      printScreen("f= a=");
+      if(evt == BT1)
+        state = MenuManual_S;
+      break;
+
+    case Sweep_S:
+      printScreen("Balayage...");
+      if(evt == BT1)
+        state = MenuSweep_S;
+      break;
+
+    case Threshold_S:
+      printScreen("Seuil...");
+      if(evt == BT1)
+        state = MenuThreshold_S;
+  
+      break;
+      
+    case UPDATE_EVT:
+      break; 
 
     default:
-      state=MenuFrequency_S;
+      state=MenuManual_S;
       break;
       
   }

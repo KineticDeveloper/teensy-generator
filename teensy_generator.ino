@@ -22,14 +22,14 @@ Mode current_mode = sweep;
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 IntervalTimer timer0;
-RotaryEncoder encoder1(4,5);
-RotaryEncoder encoder2(6,7);
+RotaryEncoder encoder1(encoder1_pin1, encoder1_pin2);
+RotaryEncoder encoder2(encoder2_pin1, encoder2_pin2);
 
 Bounce debouncer1 = Bounce();
 Bounce debouncer2 = Bounce();
 
-#define BUTTON1_PIN 2
-#define BUTTON2_PIN 3
+IntervalTimer timer1;  // used to check buttons and rotary encoders
+
 
 uint32_t freq(float f)
 {
@@ -42,10 +42,18 @@ void stop()
   m=0;
 }
 
-void clk()
+void clk() // timer0 callback for the DDS
 {
   *(int16_t *)&(DAC0_DAT0L) = sineTable[acc>>23];
   acc+=m;
+}
+
+void tick() // timer1 callback for the buttons and encoders
+{
+  encoder1.tick();
+  encoder2.tick();
+  debouncer1.update();
+  debouncer2.update();  
 }
 
 void setup() {
@@ -54,31 +62,26 @@ void setup() {
   DAC0_C0 = DAC_C0_DACEN | DAC_C0_DACRFS;
 
   timer0.begin(clk, 4); // 4 usec -> f = 250 kHz
-  pinMode(pausePin, INPUT_PULLUP);
-  pinMode(resetPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
 
   loadAllVariables(); // We load all the variables from the EEPROM into the global variables
   u8g2.begin();
-  pinMode(BUTTON1_PIN, INPUT_PULLUP);
-  pinMode(BUTTON2_PIN, INPUT_PULLUP);
-  debouncer1.attach(BUTTON1_PIN);
-  debouncer1.interval(5);
-  debouncer2.attach(BUTTON2_PIN);
-  debouncer2.interval(5);
+
+  timer1.begin(tick, 1000); // 1000 usec : checks buttons every millisecond
+  pinMode(button1_pin, INPUT_PULLUP);
+  pinMode(button2_pin, INPUT_PULLUP);
+  debouncer1.attach(button1_pin);
+  debouncer1.interval(debouncer_interval);
+  debouncer2.attach(button2_pin);
+  debouncer2.interval(debouncer_interval);
   
 }
 
 void loop() {
-  
   static int encPos1=0, encPos2=0;
-  static int mm=0;
-  //Serial.println(millis()-mm);
-  //m=millis();
-  encoder1.tick();
-  encoder2.tick();
-  debouncer1.update();
-  debouncer2.update();
+
+  state_machine(UPDATE_EVT);
+
   int newEncPos1 = encoder1.getPosition();
   int newEncPos2 = encoder2.getPosition();
 
@@ -88,18 +91,37 @@ void loop() {
     state_machine(K1L);
   encPos1=newEncPos1;
 
-  if(newEncPos1 > encPos1)
-    state_machine(K1R);
-  else if (newEncPos1 < encPos1)
-    state_machine(K1L);
-  encPos1=newEncPos1;
+  if(newEncPos2 > encPos2)
+    state_machine(K2R);
+  else if (newEncPos2 < encPos2)
+    state_machine(K2L);
+  encPos2=newEncPos2;
 
-  if(debouncer1.fell())
+
+  Serial.print(debouncer1.read());
+  Serial.print(" - ");
+  Serial.println(debouncer2.read());
+  
+  
+  if(debouncer1.fell()) {
+    Serial.println("BT1 fell");
     state_machine(BT1);
-  if(debouncer2.fell())
+  }
+  if(debouncer2.fell()) {
+    Serial.println("BT2 fell");
     state_machine(BT2);
-    
-  //Serial.println(encoder.getPosition());
+  }
+
+  if(debouncer1.rose()) {
+    Serial.println("BT1 rose");
+    state_machine(BT1);
+  }
+  if(debouncer2.rose()) {
+    Serial.println("BT2 fell");
+    state_machine(BT2);
+  }
+
+
 
   return;
   
