@@ -1,3 +1,4 @@
+#include <Bounce2.h>
 #include <RotaryEncoder.h>
 #include <U8g2lib.h>
 #include "sineTable.h"
@@ -21,7 +22,14 @@ Mode current_mode = sweep;
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 IntervalTimer timer0;
-RotaryEncoder encoder(5,6);
+RotaryEncoder encoder1(4,5);
+RotaryEncoder encoder2(6,7);
+
+Bounce debouncer1 = Bounce();
+Bounce debouncer2 = Bounce();
+
+#define BUTTON1_PIN 2
+#define BUTTON2_PIN 3
 
 uint32_t freq(float f)
 {
@@ -52,32 +60,50 @@ void setup() {
 
   loadAllVariables(); // We load all the variables from the EEPROM into the global variables
   u8g2.begin();
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.setCursor(0, 20);
-
-  u8g2.println("Hello, world!");
-  u8g2.sendBuffer();
+  pinMode(BUTTON1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON2_PIN, INPUT_PULLUP);
+  debouncer1.attach(BUTTON1_PIN);
+  debouncer1.interval(5);
+  debouncer2.attach(BUTTON2_PIN);
+  debouncer2.interval(5);
+  
 }
 
 void loop() {
-  static int m=0;
-  static int pos=0;
-  Serial.println(millis()-m);
-  m=millis();
-  encoder.tick();
-  int newPos = encoder.getPosition();
-  if(pos != newPos) {
-    u8g2.clearBuffer();
-    u8g2.setCursor(0,20);
-    u8g2.print(encoder.getPosition());
-    u8g2.sendBuffer();
-    pos = newPos;
-  }
+  
+  static int encPos1=0, encPos2=0;
+  static int mm=0;
+  //Serial.println(millis()-mm);
+  //m=millis();
+  encoder1.tick();
+  encoder2.tick();
+  debouncer1.update();
+  debouncer2.update();
+  int newEncPos1 = encoder1.getPosition();
+  int newEncPos2 = encoder2.getPosition();
+
+  if(newEncPos1 > encPos1)
+    state_machine(K1R);
+  else if (newEncPos1 < encPos1)
+    state_machine(K1L);
+  encPos1=newEncPos1;
+
+  if(newEncPos1 > encPos1)
+    state_machine(K1R);
+  else if (newEncPos1 < encPos1)
+    state_machine(K1L);
+  encPos1=newEncPos1;
+
+  if(debouncer1.fell())
+    state_machine(BT1);
+  if(debouncer2.fell())
+    state_machine(BT2);
+    
   //Serial.println(encoder.getPosition());
 
   return;
-
+  
+/*
   state_machine(); // We check for input, and manage it with a state machine
 
   if(running == false) {
@@ -115,4 +141,5 @@ void loop() {
       f+=0.01;
     }
   }
+  */
 }
