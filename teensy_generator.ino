@@ -8,13 +8,6 @@
 // #########################################################################
 // These global variables are used to drive the generator from other modules
 volatile uint32_t acc=0, m=0;
-float f=0;
-bool running = false;
-int to=0;
-int tf=0;
-int repetitions=0;
-float n_sinusoids = 0;
-Mode current_mode = sweep;
 // #########################################################################
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
@@ -29,17 +22,6 @@ volatile bool button2_pressed = false;
 
 IntervalTimer timer1;  // used to check buttons and rotary encoders
 
-
-uint32_t freq(float f)
-{
-  return f * pow(2, 32) / 250000;
-}
-
-void stop()
-{
-  acc=0;
-  m=0;
-}
 
 void clk() // timer0 callback for the DDS
 {
@@ -70,7 +52,6 @@ void setup() {
   timer0.begin(clk, 4); // 4 usec -> f = 250 kHz
   pinMode(ledPin, OUTPUT);
 
-  loadAllVariables(); // We load all the variables from the EEPROM into the global variables
   u8g2.begin();
 
   timer1.begin(tick, 1000); // 1000 usec : checks buttons every millisecond
