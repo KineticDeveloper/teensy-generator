@@ -30,7 +30,7 @@ uint32_t freq(float f)
 
 void state_machine(Event evt)
 {
-  enum State {MenuManual_S, MenuSweep_S, MenuThreshold_S, Manual_S, Sweep_S, Threshold_S};
+  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S};
   static State state = MenuManual_S;
   static int incf = 0;
   static int inca = 0;
@@ -45,36 +45,49 @@ void state_machine(Event evt)
       printScreen(1, "Manuel");
       sendBuffer();
       if(evt == K1R)
-        state = MenuSweep_S;
+        state = MenuFreqSweep_S;
       else if(evt == BT2)
         state = Manual_S;
       Serial.print("going to state ");
       Serial.println(state);
       break;
         
-    case MenuSweep_S:
+    case MenuFreqSweep_S:
       clearScreen();
-      printScreen(1, "Balayage");
+      printScreen(1, "Balayage frequence");
       sendBuffer();
       if(evt == K1L)
         state = MenuManual_S;  
       else if(evt == K1R)
-        state = MenuThreshold_S;
+        state = MenuAmplSweep_S;
       else if(evt == BT2)
-        state = Sweep_S;
+        state = FreqSweep_S;
       break;
 
+    case MenuAmplSweep_S:
+      clearScreen();
+      printScreen(1, "Balayage amplitude");
+      sendBuffer();
+      if(evt == K1L)
+        state = MenuFreqSweep_S;  
+      else if(evt == K1R)
+        state = MenuThreshold_S;
+      else if(evt == BT2)
+        state = AmplSweep_S;
+      break;
+      
     case MenuThreshold_S:
       clearScreen();
       printScreen(1, "Mesure seuil");
       sendBuffer();
       if(evt == K1L)
-        state = MenuSweep_S;
+        state = MenuAmplSweep_S;
       else if(evt == BT2)
         state = Threshold_S;
       break;
       
     case Manual_S:
+      static bool sel = true; // true : we act on frequency, false : we act on amplitude
       clearScreen();
       m=freq(f);
       printScreen(1, "f = " + String(f, 3));
@@ -85,22 +98,48 @@ void state_machine(Event evt)
       Serial.println("incf=" + String(incf));
       if(evt == BT1)
         state = MenuManual_S;
-      else if(evt == K1R)
-        f = constrain(f+pow(10, incf), 0, 121);
-      else if(evt == K1L)
-        f = constrain(f-pow(10, incf), 0, 121);
-      else if(evt == K2R)
-        incf = constrain(incf+1, -2, 2);
-      else if(evt == K2L)
-        incf = constrain(incf-1, -2, 2);
+      else if (evt == BT2)
+        sel = !sel;
+      else if(evt == K1R) {
+        if(sel==true)
+          f = constrain(f+pow(10, incf), 0, 121);
+        else
+          amp = constrain(amp+pow(10, inca), 0, 1024);
+      }
+      else if(evt == K1L) {
+        if(sel==true)
+          f = constrain(f-pow(10, incf), 0, 121);
+        else
+          amp = constrain(amp-pow(10, inca), 0, 1024);
+      }
+      else if(evt == K2R) {
+        if(sel==true) 
+          incf = constrain(incf+1, -2, 2);
+        else
+          inca = constrain(inca+1, 0, 3);
+      }
+      else if(evt == K2L) {
+        if(sel==true)
+          incf = constrain(incf-1, -2, 2);
+        else
+          inca = constrain(inca-1, 0, 3);
+      }
       break;
 
-    case Sweep_S:
+    case FreqSweep_S:
       clearScreen();
-      printScreen(1, "Balayage...");
+      printScreen(1, "Balayage frequence...");
       sendBuffer();
       if(evt == BT1)
-        state = MenuSweep_S;
+        state = MenuFreqSweep_S;
+      break;
+
+    case AmplSweep_S:
+      clearScreen();
+      printScreen(1, "Balayage amplitude...");
+      sendBuffer();
+      if(evt == BT1)
+        state = MenuAmplSweep_S;
       break;
 
     case Threshold_S:
