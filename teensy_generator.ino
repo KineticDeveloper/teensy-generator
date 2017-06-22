@@ -1,18 +1,13 @@
 #include <Bounce2.h>
 #include <RotaryEncoder.h>
 #include <U8g2lib.h>
-#include "sineTable.h"
 #include "config.h"
 #include "state_machine.h"
-#include "digipot.h"
 
-// #########################################################################
-// These global variables are used to drive the generator from other modules
-volatile uint32_t acc=0, m=0;
-// #########################################################################
+#include "generator.h"
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-IntervalTimer timer0;
+
 RotaryEncoder encoder1(encoder1_pin1, encoder1_pin2);
 RotaryEncoder encoder2(encoder2_pin1, encoder2_pin2);
 
@@ -23,12 +18,7 @@ volatile bool button2_pressed = false;
 
 IntervalTimer timer1;  // used to check buttons and rotary encoders
 
-
-void clk() // timer0 callback for the DDS
-{
-  *(int16_t *)&(DAC0_DAT0L) = sineTable[acc>>23];
-  acc+=m;
-}
+Generator generator;
 
 void tick() // timer1 callback for the buttons and encoders
 {
@@ -50,7 +40,7 @@ void setup() {
   SIM_SCGC6 |= SIM_SCGC6_DAC0;
   DAC0_C0 = DAC_C0_DACEN | DAC_C0_DACRFS;
 
-  timer0.begin(clk, 4); // 4 usec -> f = 250 kHz
+  
   pinMode(ledPin, OUTPUT);
 
   u8g2.begin();
@@ -63,7 +53,7 @@ void setup() {
   debouncer2.attach(button2_pin);
   debouncer2.interval(debouncer_interval);
 
-   init_digipot();
+  generator.init();
 }
 
 void loop() {

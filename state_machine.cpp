@@ -2,28 +2,9 @@
 #include "state_machine.h"
 #include "screen.h"
 #include "config.h"
-#include "digipot.h"
+#include "generator.h"
 
-
-extern volatile uint32_t acc, m;
-
-float f=0;
-int amp=0;
-int to;
-int tf;
-int repetitions;
-float n_sinusoids;
-
-void stop()
-{
-  acc=0;
-  m=0;
-}
-
-uint32_t freq(float f)
-{
-  return f * pow(2, 32) / 250000;
-}
+extern Generator generator;
 
 // This function is a state machine
 // It responds to user input, and modifies the global variables above, in order to communicate with the
@@ -90,11 +71,9 @@ void state_machine(Event evt)
     case Manual_S:
       static bool sel = true; // true : we act on frequency, false : we act on amplitude
       clearScreen();
-      m=freq(f);
-      set_wiper(amp);
-      printScreen(1, "f = " + String(f, 3));
+      printScreen(1, "f = " + String(generator.get_frequency(), 3));
       printScreen(2, "incf = " + String(pow(10, incf), 3));
-      printScreen(3, "amp = " + String(amp));
+      printScreen(3, "amp = " + String(generator.get_amplitude()));
       printScreen(4, "inca = " + String((int)pow(10, inca)));
       sendBuffer();
       Serial.println("incf=" + String(incf));
@@ -103,16 +82,25 @@ void state_machine(Event evt)
       else if (evt == BT2)
         sel = !sel;
       else if(evt == K1R) {
-        if(sel==true)
-          f = constrain(f+pow(10, incf), 0, 121);
-        else
-          amp = constrain(amp+pow(10, inca), 0, 1023);
+        if(sel==true) {
+          float f = generator.get_frequency();
+          generator.set_frequency(constrain(f+pow(10, incf), 0, 121));
+        }
+        else {
+          unsigned int amp = generator.get_amplitude();
+          generator.set_amplitude(constrain(amp+pow(10, inca), 0, 1023));
+          
+        }
       }
       else if(evt == K1L) {
-        if(sel==true)
-          f = constrain(f-pow(10, incf), 0, 121);
-        else
-          amp = constrain(amp-pow(10, inca), 0, 1023);
+        if(sel==true) {
+          float f = generator.get_frequency();
+          generator.set_frequency(constrain(f-pow(10, incf), 0, 121));
+        }
+        else {
+          unsigned int amp = generator.get_amplitude();
+          generator.set_amplitude(constrain(amp-pow(10, inca), 0, 1023));
+        }
       }
       else if(evt == K2R) {
         if(sel==true) 
