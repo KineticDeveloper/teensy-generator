@@ -13,8 +13,10 @@ RotaryEncoder encoder2(encoder2_pin1, encoder2_pin2);
 
 Bounce debouncer1 = Bounce();
 Bounce debouncer2 = Bounce();
+Bounce debouncer3 = Bounce();
 volatile bool button1_pressed = false;
 volatile bool button2_pressed = false;
+volatile bool button3_pressed = false;
 
 IntervalTimer timer1;  // used to check buttons and rotary encoders
 
@@ -33,6 +35,10 @@ void tick() // timer1 callback for the buttons and encoders
   if(debouncer2.fell()) {
     button2_pressed = true;
   }
+  debouncer3.update();  
+  if(debouncer3.fell()) {
+    button3_pressed = true;
+  }
 }
 
 void setup() {
@@ -48,10 +54,13 @@ void setup() {
   timer1.begin(tick, 1000); // 1000 usec : checks buttons every millisecond
   pinMode(button1_pin, INPUT_PULLUP);
   pinMode(button2_pin, INPUT_PULLUP);
+  pinMode(button3_pin, INPUT_PULLUP);
   debouncer1.attach(button1_pin);
   debouncer1.interval(debouncer_interval);
   debouncer2.attach(button2_pin);
   debouncer2.interval(debouncer_interval);
+  debouncer3.attach(button3_pin);
+  debouncer3.interval(debouncer_interval);
 
   generator.init();
 }
@@ -83,6 +92,10 @@ void loop() {
   if(button2_pressed) {
     state_machine(BT2);
     button2_pressed=false;
+  }
+  if(button3_pressed) {
+    state_machine(BT3);
+    button3_pressed=false;
   }
 
   return;
