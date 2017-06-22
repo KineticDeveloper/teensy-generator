@@ -16,6 +16,7 @@ void state_machine(Event evt)
   static State state = MenuManual_S;
   static int incf = 0;
   static int inca = 0;
+  static int ta = 0, incta=0;
 
   if(evt != UPDATE_EVT)
     Serial.println(evt);
@@ -126,10 +127,21 @@ void state_machine(Event evt)
 
     case AmplSweep_S:
       clearScreen();
-      printScreen(1, "Balayage amplitude...");
+      printScreen(1, "f = " + String(generator.get_frequency(), 3));
+      printScreen(2, "amp = " + String(generator.get_amplitude()));
+      printScreen(3, "ta = " + String(ta) + " ms");
+      printScreen(4, "incta = " + String((unsigned int)pow(10, incta)) + " ms");
       sendBuffer();
       if(evt == BT1)
         state = MenuAmplSweep_S;
+      else if(evt == K1R)
+        ta = constrain(ta+(unsigned int)pow(10, incta), 0, 10000);
+      else if(evt == K1L)
+        ta = constrain(ta-(unsigned int)pow(10, incta), 0, 10000);
+      else if(evt == K2R)
+        incta = constrain(incta+1, 0, 3);
+      else if(evt == K2L)
+        incta = constrain(incta-1, 0, 3);
       break;
 
     case Threshold_S:
