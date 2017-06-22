@@ -2,6 +2,7 @@
 #include "state_machine.h"
 #include "screen.h"
 #include "config.h"
+#include "digipot.h"
 
 
 extern volatile uint32_t acc, m;
@@ -90,6 +91,7 @@ void state_machine(Event evt)
       static bool sel = true; // true : we act on frequency, false : we act on amplitude
       clearScreen();
       m=freq(f);
+      set_wiper(amp);
       printScreen(1, "f = " + String(f, 3));
       printScreen(2, "incf = " + String(pow(10, incf), 3));
       printScreen(3, "amp = " + String(amp));

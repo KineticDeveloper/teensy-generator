@@ -4,6 +4,7 @@
 #include "sineTable.h"
 #include "config.h"
 #include "state_machine.h"
+#include "digipot.h"
 
 // #########################################################################
 // These global variables are used to drive the generator from other modules
@@ -61,7 +62,8 @@ void setup() {
   debouncer1.interval(debouncer_interval);
   debouncer2.attach(button2_pin);
   debouncer2.interval(debouncer_interval);
-  
+
+   init_digipot();
 }
 
 void loop() {
