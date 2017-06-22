@@ -6,6 +6,14 @@
 
 volatile uint32_t acc=0, m=0;
 
+Generator::Generator()
+{
+  m=0;
+  f=0;
+  amp=0;
+  enabled=false;
+}
+
 uint32_t Generator::freq(float f)
 {
   return f * pow(2, 32) / 250000;
@@ -25,6 +33,8 @@ void Generator::init() {
 void Generator::set_frequency(float df)
 {
   f=df;
+  if(enabled)
+    m=freq(f);
 }
 
 float Generator::get_frequency()
@@ -48,12 +58,14 @@ unsigned int Generator::get_amplitude()
 void Generator::enable()
 {
   m=freq(f);
+  enabled=true;
 }
 
 void Generator::disable()
 {
   m=0;
   acc=0;
+  enabled=false;
 }
 
 void Generator::toggle()
@@ -61,9 +73,9 @@ void Generator::toggle()
   Serial.println("toggle");
   Serial.println("m = " + String(m));
   Serial.println("f = " + String(f, 3));
-  if(m==0)
-    enable();
-  else
+  if(enabled)
     disable();
+  else
+    enable();
 }
 

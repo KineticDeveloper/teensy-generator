@@ -3,6 +3,7 @@
 
 class Generator {
   public:
+    Generator();
     void init();
     void set_frequency(float);
     float get_frequency();
@@ -17,6 +18,7 @@ class Generator {
     unsigned int amp;
     IntervalTimer timer0;
     uint32_t freq(float);  
+    bool enabled;
 };
 
 #endif
