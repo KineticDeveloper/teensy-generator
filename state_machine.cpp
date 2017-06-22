@@ -91,9 +91,9 @@ void state_machine(Event evt)
       clearScreen();
       m=freq(f);
       printScreen(1, "f = " + String(f, 3));
-      printScreen(2, "incf = " + String(pow(10, incf), 2));
+      printScreen(2, "incf = " + String(pow(10, incf), 3));
       printScreen(3, "amp = " + String(amp));
-      printScreen(4, "inca = " + String(pow(10, inca), 2));
+      printScreen(4, "inca = " + String((int)pow(10, inca)));
       sendBuffer();
       Serial.println("incf=" + String(incf));
       if(evt == BT1)
@@ -104,13 +104,13 @@ void state_machine(Event evt)
         if(sel==true)
           f = constrain(f+pow(10, incf), 0, 121);
         else
-          amp = constrain(amp+pow(10, inca), 0, 1024);
+          amp = constrain(amp+pow(10, inca), 0, 1023);
       }
       else if(evt == K1L) {
         if(sel==true)
           f = constrain(f-pow(10, incf), 0, 121);
         else
-          amp = constrain(amp-pow(10, inca), 0, 1024);
+          amp = constrain(amp-pow(10, inca), 0, 1023);
       }
       else if(evt == K2R) {
         if(sel==true) 
