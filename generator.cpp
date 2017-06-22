@@ -56,3 +56,14 @@ void Generator::disable()
   acc=0;
 }
 
+void Generator::toggle()
+{
+  Serial.println("toggle");
+  Serial.println("m = " + String(m));
+  Serial.println("f = " + String(f, 3));
+  if(m==0)
+    enable();
+  else
+    disable();
+}
+

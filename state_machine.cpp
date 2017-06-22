@@ -77,11 +77,12 @@ void state_machine(Event evt)
       printScreen(3, "amp = " + String(generator.get_amplitude()));
       printScreen(4, "inca = " + String((int)pow(10, inca)));
       sendBuffer();
-      Serial.println("incf=" + String(incf));
       if(evt == BT1)
         state = MenuManual_S;
       else if (evt == BT2)
         sel = !sel;
+      else if(evt==BT3)
+        generator.toggle();
       else if(evt == K1R) {
         if(sel==true) {
           float f = generator.get_frequency();

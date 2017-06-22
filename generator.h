@@ -10,6 +10,7 @@ class Generator {
     unsigned int get_amplitude();
     void enable();
     void disable();
+    void toggle();
     
   private:
     float f;
