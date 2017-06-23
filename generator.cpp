@@ -2,9 +2,12 @@
 #include "generator.h"
 #include "sineTable.h"
 #include "digipot.h"
+#include "config.h"
 
 
 volatile uint32_t acc=0, m=0;
+
+
 
 Generator::Generator()
 {
@@ -12,6 +15,9 @@ Generator::Generator()
   f=0;
   amp=0;
   enabled=false;
+
+  mode=None;
+  ta=0;
 }
 
 uint32_t Generator::freq(float f)
@@ -57,8 +63,8 @@ unsigned int Generator::get_amplitude()
 
 void Generator::enable()
 {
-  m=freq(f);
   enabled=true;
+  counter.reset();
 }
 
 void Generator::disable()
@@ -74,5 +80,34 @@ void Generator::toggle()
     disable();
   else
     enable();
+}
+
+void Generator::set_mode(Mode m)
+{
+  mode=m;
+}
+
+void Generator::tick()
+{
+  if(!enabled)
+    return;
+  if(mode == Manual)
+    m=freq(f);
+  else if(mode == AmplitudeSweep) {
+    if(counter.get_elapsed_time() > ta) {
+      amp = (amp+1) % maxAmplitude;
+      counter.reset();
+    }
+  }
+}
+
+void Generator::set_ta(unsigned int t)
+{
+  ta=t;
+}
+
+unsigned int Generator::get_ta()
+{
+  return ta;
 }
 

@@ -14,9 +14,7 @@ void state_machine(Event evt)
 {
   enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S};
   static State state = MenuManual_S;
-  static int incf = 0;
-  static int inca = 0;
-  static int ta = 0, incta=0;
+  static int incf = 0, inca = 0, incta=0;
 
   if(evt != UPDATE_EVT)
     Serial.println(evt);
@@ -71,6 +69,7 @@ void state_machine(Event evt)
       
     case Manual_S:
       static bool sel = true; // true : we act on frequency, false : we act on amplitude
+      generator.set_mode(Manual);
       clearScreen();
       printScreen(1, "f = " + String(generator.get_frequency(), 3));
       printScreen(2, "incf = " + String(pow(10, incf), 3));
@@ -90,7 +89,7 @@ void state_machine(Event evt)
         }
         else {
           unsigned int amp = generator.get_amplitude();
-          generator.set_amplitude(constrain(amp+pow(10, inca), 0, 1023));
+          generator.set_amplitude(constrain(amp+pow(10, inca), 0, maxAmplitude));
           
         }
       }
@@ -101,7 +100,7 @@ void state_machine(Event evt)
         }
         else {
           unsigned int amp = generator.get_amplitude();
-          generator.set_amplitude(constrain(amp-pow(10, inca), 0, 1023));
+          generator.set_amplitude(constrain(amp-pow(10, inca), 0, maxAmplitude));
         }
       }
       else if(evt == K2R) {
@@ -127,18 +126,27 @@ void state_machine(Event evt)
       break;
 
     case AmplSweep_S:
+      generator.set_mode(AmplitudeSweep);
       clearScreen();
       printScreen(1, "f = " + String(generator.get_frequency(), 3));
       printScreen(2, "amp = " + String(generator.get_amplitude()));
-      printScreen(3, "ta = " + String(ta) + " ms");
+      printScreen(3, "ta = " + String(generator.get_ta()) + " ms");
       printScreen(4, "incta = " + String((unsigned int)pow(10, incta)) + " ms");
       sendBuffer();
       if(evt == BT1)
         state = MenuAmplSweep_S;
-      else if(evt == K1R)
+      else if(evt == BT3)
+        generator.toggle();
+      else if(evt == K1R) {
+        unsigned int ta = generator.get_ta();
         ta = constrain(ta+(unsigned int)pow(10, incta), 0, 10000);
-      else if(evt == K1L)
+        generator.set_ta(ta);
+      }
+      else if(evt == K1L) {
+        unsigned int ta = generator.get_ta();
         ta = constrain(ta-(unsigned int)pow(10, incta), 0, 10000);
+        generator.set_ta(ta);
+      }
       else if(evt == K2R)
         incta = constrain(incta+1, 0, 3);
       else if(evt == K2L)

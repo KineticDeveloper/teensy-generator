@@ -98,6 +98,8 @@ void loop() {
     button3_pressed=false;
   }
 
+  generator.tick();
+
   return;
   
 /*

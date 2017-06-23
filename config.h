@@ -3,6 +3,7 @@
 
 #define f1 0.5
 #define f2 121
+#define maxAmplitude 1023
 
 #define ledPin 13
 #define button1_pin 2
