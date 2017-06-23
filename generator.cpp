@@ -70,9 +70,6 @@ void Generator::disable()
 
 void Generator::toggle()
 {
-  Serial.println("toggle");
-  Serial.println("m = " + String(m));
-  Serial.println("f = " + String(f, 3));
   if(enabled)
     disable();
   else
