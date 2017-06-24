@@ -85,22 +85,26 @@ void state_machine(Event evt)
       else if(evt == K1R) {
         if(sel==true) {
           float f = generator.get_frequency();
-          generator.set_frequency(constrain(f+pow(10, incf), 0, 121));
+          f = constrain(f+pow(10, incf), 0, 121);
+          generator.set_frequency(f);
         }
         else {
           unsigned int amp = generator.get_amplitude();
-          generator.set_amplitude(constrain(amp+pow(10, inca), 0, maxAmplitude));
+          amp = constrain(amp+pow(10, inca), 0, maxAmplitude);
+          generator.set_amplitude(amp);
           
         }
       }
       else if(evt == K1L) {
         if(sel==true) {
           float f = generator.get_frequency();
-          generator.set_frequency(constrain(f-pow(10, incf), 0, 121));
+          f = constrain(f-pow(10, incf), 0, 121);
+          generator.set_frequency(f);
         }
         else {
           unsigned int amp = generator.get_amplitude();
-          generator.set_amplitude(constrain(amp-pow(10, inca), 0, maxAmplitude));
+          amp = constrain(amp-pow(10, inca), 0, maxAmplitude);
+          generator.set_amplitude(amp);
         }
       }
       else if(evt == K2R) {
