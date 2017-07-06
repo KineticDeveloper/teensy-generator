@@ -51,7 +51,7 @@ float Generator::get_frequency()
 void Generator::set_amplitude(unsigned int da)
 {
   if(amp!=da) {
-    set_wiper(amp);
+    set_wiper(da);
     amp=da;
   }
 }
