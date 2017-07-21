@@ -86,9 +86,9 @@ void Generator::toggle()
     enable();
 }
 
-void Generator::set_mode(Mode m)
+void Generator::set_mode(Mode mo)
 {
-  mode=m;
+  mode=mo;
 }
 
 void Generator::tick()
