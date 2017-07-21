@@ -3,7 +3,7 @@
 
 #include "counter.h"
 
-enum Mode {None, Manual, AmplitudeSweep};
+enum Mode {None, Manual, FrequencySweep, AmplitudeSweep, Threshold};
 
 class Generator {
   public:
@@ -21,6 +21,8 @@ class Generator {
     void tick();
     void set_ta(unsigned int);
     unsigned int get_ta();
+    void set_tf(unsigned int);
+    unsigned int get_tf();
     
   private:
     float f;
@@ -32,6 +34,7 @@ class Generator {
     Mode mode;
     Counter counter;
     unsigned int ta;
+    unsigned int tf;
     
 };
 

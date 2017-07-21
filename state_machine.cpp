@@ -14,7 +14,7 @@ void state_machine(Event evt)
 {
   enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S};
   static State state = MenuManual_S;
-  static int incf = 0, inca = 0, incta=0;
+  static int incf = 0, inca = 0, incta=0, inctf=0;
 
   if(evt != UPDATE_EVT)
     Serial.println(evt);
@@ -122,11 +122,17 @@ void state_machine(Event evt)
       break;
 
     case FreqSweep_S:
+      generator.set_mode(FrequencySweep);
       clearScreen();
-      printScreen(1, "Balayage frequence...");
+      printScreen(1, "f = " + String(generator.get_frequency(), 3));
+      printScreen(2, "amp = " + String(generator.get_amplitude()));
+      printScreen(3, "tf = " + String(generator.get_tf()) + " ms");
+      printScreen(4, "inctf = " + String((unsigned int)pow(10, inctf)) + " ms");
       sendBuffer();
       if(evt == BT1)
         state = MenuFreqSweep_S;
+      else if(evt == BT3)
+        generator.toggle();
       break;
 
     case AmplSweep_S:

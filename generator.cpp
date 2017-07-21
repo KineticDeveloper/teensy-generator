@@ -12,12 +12,14 @@ volatile uint32_t acc=0, m=0;
 Generator::Generator()
 {
   m=0;
+  enabled=false;
   f=0;
   amp=0;
-  enabled=false;
+  
 
   mode=None;
   ta=0;
+  tf=0;
 }
 
 uint32_t Generator::freq(float f)
@@ -34,6 +36,8 @@ void clk() // timer0 callback for the DDS
 void Generator::init() {
   timer0.begin(clk, 4); // 4 usec -> f = 250 kHz
   init_digipot();
+  set_frequency(defaultFrequency);
+  set_amplitude(defaultAmplitude);
 }
 
 void Generator::set_frequency(float df)
@@ -94,8 +98,19 @@ void Generator::tick()
   if(mode == Manual)
     m=freq(f);
   else if(mode == AmplitudeSweep) {
+    m=freq(f);
     if(counter.get_elapsed_time() > ta) {
       amp = (amp+1) % maxAmplitude;
+      set_wiper(amp);
+      counter.reset();
+    }
+  }
+  else if(mode == FrequencySweep) {
+    m=freq(f);
+    if(counter.get_elapsed_time() > tf) {
+      f=f+0.01;
+      if(f>f2)
+        f=0;
       counter.reset();
     }
   }
@@ -111,3 +126,12 @@ unsigned int Generator::get_ta()
   return ta;
 }
 
+void Generator::set_tf(unsigned int t)
+{
+  tf=t;
+}
+
+unsigned int Generator::get_tf()
+{
+  return tf;
+}
