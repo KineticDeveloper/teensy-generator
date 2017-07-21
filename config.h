@@ -16,6 +16,8 @@
 #define encoder1_pin2 4
 #define encoder2_pin1 5
 #define encoder2_pin2 6
+#define button4_pin 7
+#define button5_pin 8
 
 #define digipot_cs_pin 10
 

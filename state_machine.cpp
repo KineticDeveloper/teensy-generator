@@ -12,7 +12,7 @@ extern Generator generator;
 
 void state_machine(Event evt)
 {
-  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S};
+  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S, ThresholdLeft_S, ThresholdRight_S};
   static State state = MenuManual_S;
   static int incf = 0, inca = 0, incta=0, inctf=0;
 
@@ -167,11 +167,49 @@ void state_machine(Event evt)
       clearScreen();
       printScreen(1, "Seuil...");
       sendBuffer();
-      if(evt == BT1)
-        state = MenuThreshold_S;
-  
+      switch(evt) {
+        case BT1:
+          state = MenuThreshold_S;
+          break;
+        case BT4:
+          state = ThresholdLeft_S;
+          break;
+        case BT5:
+          state = ThresholdRight_S;
+          break;
+        default:
+          break;
+      }
       break;
-      
+
+    case ThresholdLeft_S:
+      clearScreen();
+      printScreen(1, "Gauche");
+      sendBuffer();
+      switch(evt) {
+        case BT1:
+          state = Threshold_S;
+          break;
+        default:
+          break;
+      }
+      break;
+
+    case ThresholdRight_S:
+      clearScreen();
+      printScreen(1, "Droite");
+      sendBuffer();
+      switch(evt) {
+        case BT1:
+          state = Threshold_S;
+          break;
+        default:
+          break;
+      }
+      break;
+
+    
+    
     default:
       state=MenuManual_S;
       break;

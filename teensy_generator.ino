@@ -14,9 +14,13 @@ RotaryEncoder encoder2(encoder2_pin1, encoder2_pin2);
 Bounce debouncer1 = Bounce();
 Bounce debouncer2 = Bounce();
 Bounce debouncer3 = Bounce();
+Bounce debouncer4 = Bounce();
+Bounce debouncer5 = Bounce();
 volatile bool button1_pressed = false;
 volatile bool button2_pressed = false;
 volatile bool button3_pressed = false;
+volatile bool button4_pressed = false;
+volatile bool button5_pressed = false;
 
 IntervalTimer timer1;  // used to check buttons and rotary encoders
 
@@ -39,6 +43,14 @@ void tick() // timer1 callback for the buttons and encoders
   if(debouncer3.fell()) {
     button3_pressed = true;
   }
+  debouncer4.update();  
+  if(debouncer4.fell()) {
+    button4_pressed = true;
+  }
+  debouncer5.update();  
+  if(debouncer5.fell()) {
+    button5_pressed = true;
+  }
 }
 
 void setup() {
@@ -55,12 +67,18 @@ void setup() {
   pinMode(button1_pin, INPUT_PULLUP);
   pinMode(button2_pin, INPUT_PULLUP);
   pinMode(button3_pin, INPUT_PULLUP);
+  pinMode(button4_pin, INPUT_PULLUP);
+  pinMode(button5_pin, INPUT_PULLUP);
   debouncer1.attach(button1_pin);
   debouncer1.interval(debouncer_interval);
   debouncer2.attach(button2_pin);
   debouncer2.interval(debouncer_interval);
   debouncer3.attach(button3_pin);
   debouncer3.interval(debouncer_interval);
+  debouncer4.attach(button4_pin);
+  debouncer4.interval(debouncer_interval);
+  debouncer5.attach(button5_pin);
+  debouncer5.interval(debouncer_interval);
 
   generator.init();
 }
@@ -96,6 +114,14 @@ void loop() {
   if(button3_pressed) {
     state_machine(BT3);
     button3_pressed=false;
+  }
+  if(button4_pressed) {
+    state_machine(BT4);
+    button4_pressed=false;
+  }
+  if(button5_pressed) {
+    state_machine(BT5);
+    button5_pressed=false;
   }
 
   generator.tick();
