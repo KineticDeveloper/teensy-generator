@@ -1,4 +1,3 @@
-#include <Bounce2.h>
 #include <RotaryEncoder.h>
 #include <U8g2lib.h>
 #include "config.h"
@@ -11,46 +10,24 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 RotaryEncoder encoder1(encoder1_pin1, encoder1_pin2);
 RotaryEncoder encoder2(encoder2_pin1, encoder2_pin2);
 
-Bounce debouncer1 = Bounce();
-Bounce debouncer2 = Bounce();
-Bounce debouncer3 = Bounce();
-Bounce debouncer4 = Bounce();
-Bounce debouncer5 = Bounce();
-volatile bool button1_pressed = false;
-volatile bool button2_pressed = false;
-volatile bool button3_pressed = false;
-volatile bool button4_pressed = false;
-volatile bool button5_pressed = false;
-
 IntervalTimer timer1;  // used to check buttons and rotary encoders
 
 Generator generator;
 
-void tick() // timer1 callback for the buttons and encoders
+bool button_pressed(unsigned int pin)
+{
+  if(digitalRead(pin)==LOW) {
+    delay(10);
+    while(digitalRead(pin)==LOW);
+    return true;
+  }
+  return false;
+}
+
+void tick() // timer1 callback for the encoders
 {
   encoder1.tick();
-  
   encoder2.tick();
-  debouncer1.update();
-  if(debouncer1.fell()) {
-    button1_pressed = true;
-  }
-  debouncer2.update();  
-  if(debouncer2.fell()) {
-    button2_pressed = true;
-  }
-  debouncer3.update();  
-  if(debouncer3.fell()) {
-    button3_pressed = true;
-  }
-  debouncer4.update();  
-  if(debouncer4.fell()) {
-    button4_pressed = true;
-  }
-  debouncer5.update();  
-  if(debouncer5.fell()) {
-    button5_pressed = true;
-  }
 }
 
 void setup() {
@@ -69,16 +46,6 @@ void setup() {
   pinMode(button3_pin, INPUT_PULLUP);
   pinMode(button4_pin, INPUT_PULLUP);
   pinMode(button5_pin, INPUT_PULLUP);
-  debouncer1.attach(button1_pin);
-  debouncer1.interval(debouncer_interval);
-  debouncer2.attach(button2_pin);
-  debouncer2.interval(debouncer_interval);
-  debouncer3.attach(button3_pin);
-  debouncer3.interval(debouncer_interval);
-  debouncer4.attach(button4_pin);
-  debouncer4.interval(debouncer_interval);
-  debouncer5.attach(button5_pin);
-  debouncer5.interval(debouncer_interval);
 
   generator.init();
 }
@@ -103,26 +70,20 @@ void loop() {
     state_machine(K2L);
   encPos2=newEncPos2;
 
-  if(button1_pressed) {
+  if(button_pressed(button1_pin))
     state_machine(BT1);
-    button1_pressed=false;
-  }
-  if(button2_pressed) {
+
+  if(button_pressed(button2_pin))
     state_machine(BT2);
-    button2_pressed=false;
-  }
-  if(button3_pressed) {
+
+  if(button_pressed(button3_pin))
     state_machine(BT3);
-    button3_pressed=false;
-  }
-  if(button4_pressed) {
+
+  if(button_pressed(button4_pin))
     state_machine(BT4);
-    button4_pressed=false;
-  }
-  if(button5_pressed) {
+
+  if(button_pressed(button5_pin))
     state_machine(BT5);
-    button5_pressed=false;
-  }
 
   generator.tick();
 
