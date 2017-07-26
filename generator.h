@@ -3,7 +3,7 @@
 
 #include "counter.h"
 
-enum Mode {None, Manual, FrequencySweep, AmplitudeSweep, Threshold};
+enum Mode {None, Manual, FrequencySweep, AmplitudeSweep, Threshold, Pulse};
 
 class Generator {
   public:
@@ -35,6 +35,8 @@ class Generator {
     Counter counter;
     unsigned int ta;
     unsigned int tf;
+
+    unsigned int pc;  // pulse counter
     
 };
 

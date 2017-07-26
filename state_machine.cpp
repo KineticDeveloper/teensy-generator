@@ -12,7 +12,7 @@ extern Generator generator;
 
 void state_machine(Event evt)
 {
-  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S, ThresholdLeft_S, ThresholdRight_S};
+  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, MenuPulse_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S, ThresholdLeft_S, ThresholdRight_S, Pulse_S};
   static State state = MenuManual_S;
   static int incf = 0, inca = 0, incta=0, inctf=0;
 
@@ -61,8 +61,20 @@ void state_machine(Event evt)
       sendBuffer();
       if(evt == K1L)
         state = MenuAmplSweep_S;
+      if(evt == K1R)
+        state = MenuPulse_S;
       else if(evt == BT2)
         state = Threshold_S;
+      break;
+
+    case MenuPulse_S:
+      clearScreen();
+      printScreen(1, "Impulsions");
+      sendBuffer();
+      if(evt == K1L)
+        state = MenuThreshold_S;
+      else if(evt == BT2)
+        state = Pulse_S;
       break;
       
     case Manual_S:
@@ -206,6 +218,17 @@ void state_machine(Event evt)
       }
       break;
 
+    case Pulse_S:
+      generator.set_mode(Pulse);
+      clearScreen();
+      printScreen(1, "f = " + String(generator.get_frequency(), 3));
+      printScreen(2, "amp = " + String(generator.get_amplitude()));
+      sendBuffer();
+      if(evt == BT1)
+        state = MenuPulse_S;
+      else if(evt == BT3)
+        generator.toggle();
+      break;
     
     
     default:

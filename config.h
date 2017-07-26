@@ -3,6 +3,8 @@
 
 #define f1 0.5
 #define f2 121
+#define tOn 100
+#define tOff 900
 #define maxAmplitude 1023
 #define defaultFrequency 100
 #define defaultAmplitude 1023

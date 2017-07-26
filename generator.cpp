@@ -20,6 +20,8 @@ Generator::Generator()
   mode=None;
   ta=0;
   tf=0;
+
+  pc=0;
 }
 
 uint32_t Generator::freq(float f)
@@ -113,6 +115,24 @@ void Generator::tick()
         f=0;
       counter.reset();
     }
+  }
+  else if(mode == Pulse) {
+    if(counter.get_elapsed_time() < tOn)
+      m=freq(f);
+    else {
+      m=0;
+      acc=0;
+    }
+    if(counter.get_elapsed_time() > tOn + tOff) {
+      pc++;
+      counter.reset();
+    }
+    if(pc>=5) {
+      f+=0.01;
+      pc=0;
+    }
+    if(f>=121)
+      disable();
   }
 }
 
