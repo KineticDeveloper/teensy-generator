@@ -29,8 +29,6 @@ void state_machine(Event evt)
         state = MenuFreqSweep_S;
       else if(evt == BT2)
         state = Manual_S;
-      Serial.print("going to state ");
-      Serial.println(state);
       break;
         
     case MenuFreqSweep_S:
