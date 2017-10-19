@@ -12,7 +12,7 @@ extern Generator generator;
 
 void state_machine(Event evt)
 {
-  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuThreshold_S, MenuPulse_S, Manual_S, FreqSweep_S, AmplSweep_S, Threshold_S, ThresholdLeft_S, ThresholdRight_S, Pulse_S};
+  enum State {MenuManual_S, MenuFreqSweep_S, MenuAmplSweep_S, MenuYesNo_S, MenuPulse_S, Manual_S, FreqSweep_S, AmplSweep_S, YesNo_S, YesNoWait_S, Yes_S, No_S, Pulse_S};
   static State state = MenuManual_S;
   static int incf = 0, inca = 0, incta=0, inctf=0;
 
@@ -50,21 +50,21 @@ void state_machine(Event evt)
       if(evt == K1L)
         state = MenuFreqSweep_S;  
       else if(evt == K1R)
-        state = MenuThreshold_S;
+        state = MenuYesNo_S;
       else if(evt == BT2)
         state = AmplSweep_S;
       break;
       
-    case MenuThreshold_S:
+    case MenuYesNo_S:
       clearScreen();
-      printScreen(1, "Mesure seuil");
+      printScreen(1, "Deviner");
       sendBuffer();
       if(evt == K1L)
         state = MenuAmplSweep_S;
       if(evt == K1R)
         state = MenuPulse_S;
       else if(evt == BT2)
-        state = Threshold_S;
+        state = YesNo_S;
       break;
 
     case MenuPulse_S:
@@ -72,7 +72,7 @@ void state_machine(Event evt)
       printScreen(1, "Impulsions");
       sendBuffer();
       if(evt == K1L)
-        state = MenuThreshold_S;
+        state = MenuYesNo_S;
       else if(evt == BT2)
         state = Pulse_S;
       break;
@@ -173,45 +173,63 @@ void state_machine(Event evt)
         incta = constrain(incta-1, 0, 3);
       break;
 
-    case Threshold_S:
+    case YesNo_S: {
       clearScreen();
-      printScreen(1, "Seuil...");
+      printScreen(1, "Deviner...");
       sendBuffer();
+      int r = random(2);
+      Serial.print("r=");
+      Serial.println(r);
+      if(r==0)
+        generator.disable();
+      else
+        generator.enable();
+      state = YesNoWait_S;
+      break;
+    }
+
+    case YesNoWait_S:
       switch(evt) {
         case BT1:
-          state = MenuThreshold_S;
+          state = MenuYesNo_S;
           break;
         case BT4:
-          state = ThresholdLeft_S;
+          state = Yes_S;
           break;
         case BT5:
-          state = ThresholdRight_S;
+          state = No_S;
+          break;
+        default:
+          break;
+      }
+      break;
+      
+    case Yes_S:
+      clearScreen();
+      if(generator.isEnabled())
+        printScreen(1, "Ok !");
+      else
+        printScreen(1, "Erreur");
+      sendBuffer();
+      switch(evt) {
+        case BT1:
+          state = YesNo_S;
           break;
         default:
           break;
       }
       break;
 
-    case ThresholdLeft_S:
+    case No_S:
       clearScreen();
-      printScreen(1, "Gauche");
+      if(generator.isEnabled())
+        printScreen(1, "Erreur");
+      else
+        printScreen(1, "Ok !");
       sendBuffer();
       switch(evt) {
         case BT1:
-          state = Threshold_S;
-          break;
-        default:
-          break;
-      }
-      break;
-
-    case ThresholdRight_S:
-      clearScreen();
-      printScreen(1, "Droite");
-      sendBuffer();
-      switch(evt) {
-        case BT1:
-          state = Threshold_S;
+          state = YesNo_S;
           break;
         default:
           break;

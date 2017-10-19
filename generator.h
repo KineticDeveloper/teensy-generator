@@ -3,7 +3,7 @@
 
 #include "counter.h"
 
-enum Mode {None, Manual, FrequencySweep, AmplitudeSweep, Threshold, Pulse};
+enum Mode {None, Manual, FrequencySweep, AmplitudeSweep, YesNo, Pulse};
 
 class Generator {
   public:
@@ -16,6 +16,7 @@ class Generator {
     void enable();
     void disable();
     void toggle();
+    boolean isEnabled();
 
     void set_mode(Mode);
     void tick();

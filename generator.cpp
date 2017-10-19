@@ -7,8 +7,6 @@
 
 volatile uint32_t acc=0, m=0;
 
-
-
 Generator::Generator()
 {
   m=0;
@@ -88,6 +86,11 @@ void Generator::toggle()
     enable();
 }
 
+boolean Generator::isEnabled()
+{
+  return enabled;
+}
+
 void Generator::set_mode(Mode mo)
 {
   mode=mo;
@@ -115,6 +118,9 @@ void Generator::tick()
         f=0;
       counter.reset();
     }
+  }
+  else if(mode == YesNo) {
+    m=freq(f);
   }
   else if(mode == Pulse) {
     if(counter.get_elapsed_time() < tOn)
